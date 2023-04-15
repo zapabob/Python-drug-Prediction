@@ -51,7 +51,7 @@ def button_click():
     adme_data.to_csv(os.path.expanduser("~/Desktop/My.csv"), index=False)
 
 # GUIアプリケーションのウィンドウを作成する
-root = tk.Tk()
+root = Tk.tk()
 root.title('ADME Data')
 
 # IUPAC名を入力するためのテキストボックスを作成し、ウィンドウ上に配置する

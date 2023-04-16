@@ -19,17 +19,17 @@ def get_adme_data(smiles):
     time.sleep(90)
     # ランダムにプロキシを選択する
     proxies = [
-        {'http': '43.157.66.170:8080	HTTP-HTTPS	Lvl3	Japan country logo Japan	Tokyo		1m｝
-       {'http' : '139.162.78.109:8080^   HTTP-HTTPS	Lvl3	Japan country logo Japan	Tokyo		4m｝
-        {'http' :'43.153.222.203:8080｝	HTTP-HTTPS	Lvl3	}
-        {'http': '43.138.216.160:8080｝        Japan country logo Japan	Tokyo		13m｝
-          {'http':'43.135.182.214:8080｝	HTTP-HTTPS	Lvl3 Japan country logo Japan	Tokyo		5h}	
+        {'http':'43.157.66.170:8080'} HTTP-HTTPS	Lvl3	Japan country logo Japan	Tokyo		1m｝
+       {'http' :'139.162.78.109:8080'}HTTP-HTTPS	Lvl3	Japan country logo Japan	Tokyo		4m｝
+        {'http' :'43.153.222.203:8080'｝	HTTP-HTTPS	Lvl3	}
+        {'http': '43.138.216.160:8080'｝        Japan country logo Japan	Tokyo		13m｝
+          {'http':'43.135.182.214:8080'｝	HTTP-HTTPS	Lvl3 Japan country logo Japan	Tokyo		5h}	
 
     ]
     proxy = random.choice(proxies)
     # プロキシを使用してSwissADMEにアクセスする
     r = requests.get('http://www.swissadme.ch/', params={'proxy': proxy, 'SMILES': smiles})
-    # 結果を取得する
+    # 結果を取得した後30s待機する
     adme_data ='SwissADME.csv'
     time.sleep(30)
     return adme_data

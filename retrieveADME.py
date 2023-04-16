@@ -67,7 +67,8 @@ def main():
     # コマンドライン引数チェック
     if len(sys.argv) != 2:
         print(f"Usage: {sys.argv[0]} <SMILES description>")
-        return
+        print('デフォルト動作として、Methamphetamine: ”CNC(C)Cc1ccccc1”の情報を取得します')
+        smiles = "CNC(C)Cc1ccccc1"
     else:
         smiles = sys.argv[1]
 

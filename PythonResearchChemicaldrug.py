@@ -3,15 +3,11 @@ import time
 import random
 import requests
 import tkinter as tk
-from tkinter import messagebox
 from rdkit import Chem
-from selenium import webdriver
-import pandas as pd
+import cirpy
 
 def iupac_to_smiles(iupac):
-    mol = Chem.MolFromSmiles(iupac)
-    smiles = Chem.MolToSmiles(mol)
-    return smiles
+    return cirpy.resolve(iupac, "smiles")
 
 def get_adme_data(smiles):
     # SwissADMEからADMEデータを取得する
@@ -19,12 +15,11 @@ def get_adme_data(smiles):
     time.sleep(90)
     # ランダムにプロキシを選択する
     proxies = [
-        {'http':'43.157.66.170:8080'} HTTP-HTTPS	Lvl3	Japan country logo Japan	Tokyo		1m｝
-       {'http' :'139.162.78.109:8080'}HTTP-HTTPS	Lvl3	Japan country logo Japan	Tokyo		4m｝
-        {'http' :'43.153.222.203:8080'｝	HTTP-HTTPS	Lvl3	}
-        {'http': '43.138.216.160:8080'｝        Japan country logo Japan	Tokyo		13m｝
-          {'http':'43.135.182.214:8080'｝	HTTP-HTTPS	Lvl3 Japan country logo Japan	Tokyo		5h}	
-
+        {'http':'43.157.66.170:8080'},     # HTTP-HTTPS	Lvl3	Japan country logo Japan	Tokyo		1m
+        {'http' :'139.162.78.109:8080'},   # HTTP-HTTPS	Lvl3	Japan country logo Japan	Tokyo		4m
+        {'http' :'43.153.222.203:8080'},   #	HTTP-HTTPS	Lvl3
+        {'http': '43.138.216.160:8080'},   #        Japan country logo Japan	Tokyo		13m
+        {'http':'43.135.182.214:8080'}	   # HTTP-HTTPS	Lvl3 Japan country logo Japan	Tokyo		5h
     ]
     proxy = random.choice(proxies)
     # プロキシを使用してSwissADMEにアクセスする

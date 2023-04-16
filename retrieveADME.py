@@ -11,10 +11,21 @@ import io
 import sys
 
 class SwissADME:
-    def __init__(self, smiles):
+    def __init__(self, smiles, proxy=None):
         # Chromeのヘッドレスモードを有効にするオプションを設定します
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument("--headless")
+
+        # プロキシ設定
+        self.proxy = None
+        if proxy:
+            m = re.match(r"https*://[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+", proxy)
+            if m:
+                self.proxy = proxy
+                print(f"proxy setting is enabled. ({self.proxy})")
+                chrome_options.add_argument(f"--proxy-server={self.proxy}")
+            else:
+                raise Exception("Proxy server is not found. Please confirm your setting.")
 
         # ChromeDriverを初期化し、ブラウザを起動します
         driver = webdriver.Chrome(options=chrome_options)
@@ -47,7 +58,7 @@ class SwissADME:
             raise Exception("There is no CSV link.")
 
         # CSVファイルをダウンロード
-        response = requests.get(url_csv)
+        response = requests.get(url_csv, proxies=self.proxy)
         if response.status_code != 200:
             raise Exception("Download Error!")
 

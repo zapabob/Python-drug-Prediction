@@ -89,7 +89,7 @@ def main():
 
     # 表示
     for _, row in df.iterrows():
-        print(f"{row.name}: {row}")
+        print(row)
 
 if __name__ == "__main__":
     main()

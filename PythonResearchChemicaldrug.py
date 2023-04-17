@@ -2,16 +2,11 @@
 
 import pandas as pd
 import tkinter as tk
-import cirpy
-import asyncio
-from classes.SwissADME import SwissADME
-
-def iupac_to_smiles(iupac: str) -> str:
-    return cirpy.resolve(iupac, "smiles")
+import classes as cl
 
 def get_adme_data(smiles: str) -> pd.DataFrame:
     # SwissADMEからADMEデータを取得する
-    adme = SwissADME(smiles)
+    adme = cl.SwissADME(smiles)
     return adme.get()
 
 def get_ki_data(adme_data: pd.DataFrame) -> dict[str, str]:
@@ -32,7 +27,7 @@ def get_ec50_data(adme_data: pd.DataFrame) -> dict[str, str]:
 
 def button_click() -> None:
     iupac: str = iupac_entry.get()
-    smiles: str = iupac_to_smiles(iupac)
+    smiles: str = cl.SubstanceName(iupac = iupac).get()
     adme_data: pd.DataFrame = get_adme_data(smiles)
     # ki_data = get_ki_data(adme_data)
     # ec50_data = get_ec50_data(adme_data)

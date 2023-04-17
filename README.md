@@ -9,3 +9,4 @@ calculate and speculate research chemical
 ## 参考ページ
 - [SwissTargetPrediction](http://www.swisstargetprediction.ch/)
 - [SwissADME](http://www.swissadme.ch/)
+- [Chemical Identifier Resolver](https://cactus.nci.nih.gov/chemical/structure)

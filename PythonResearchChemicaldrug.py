@@ -15,11 +15,11 @@ def get_adme_data(smiles):
     time.sleep(90)
     # ランダムにプロキシを選択する
     proxies = [
-        {'http':'43.157.66.170:8080'},     # HTTP-HTTPS	Lvl3	Japan country logo Japan	Tokyo		1m
-        {'http' :'139.162.78.109:8080'},   # HTTP-HTTPS	Lvl3	Japan country logo Japan	Tokyo		4m
-        {'http' :'43.153.222.203:8080'},   #	HTTP-HTTPS	Lvl3
-        {'http': '43.138.216.160:8080'},   #        Japan country logo Japan	Tokyo		13m
-        {'http':'43.135.182.214:8080'}	   # HTTP-HTTPS	Lvl3 Japan country logo Japan	Tokyo		5h
+        {'http':'43.157.66.170:8080'},    # HTTP-HTTPS	Lvl3	Japan country logo Japan	Tokyo		1m
+        {'http':'139.162.78.109:8080'},   # HTTP-HTTPS	Lvl3	Japan country logo Japan	Tokyo		4m
+        {'http':'43.153.222.203:8080'},   #	HTTP-HTTPS	Lvl3
+        {'http':'43.138.216.160:8080'},   # Japan country logo Japan	Tokyo		13m
+        {'http':'43.135.182.214:8080'},	  # HTTP-HTTPS	Lvl3 Japan country logo Japan	Tokyo		5h
     ]
     proxy = random.choice(proxies)
     # プロキシを使用してSwissADMEにアクセスする
@@ -30,15 +30,15 @@ def get_adme_data(smiles):
     return adme_data
 
 def get_ki_data(adme_data):
-    # 各モノアミン受容体への半数阻害効果定数、半数効果濃度定数を取得する
-    ki_data = {}
-    ki_data['DAT'] = adme_data.loc[adme_data['Target'] == 'DAT', 'Ki (nM)'].iloc[0]
-    ki_data['NAT'] = adme_data.loc[adme_data['Target'] == 'NET', 'Ki (nM)'].iloc[0]
-    ki_data['SERT'] = adme_data.loc[adme_data['Target'] == 'SERT', 'Ki (nM)'].iloc[0]
-    return ki_data
+    # 各モノアミン受容体への半数阻害効果濃度を取得する
+    IC50_data = {}
+    IC50_data['DAT'] = adme_data.loc[adme_data['Target'] == 'DAT', 'IC50 (nM)'].iloc[0]
+    IC50_data['NAT'] = adme_data.loc[adme_data['Target'] == 'NET', 'IC50 (nM)'].iloc[0]
+    IC50_data['SERT'] = adme_data.loc[adme_data['Target'] == 'SERT', 'IC50 (nM)'].iloc[0]
+    return IC50_data
 
 def get_ec50_data(adme_data):
-    # 各モノアミン受容体への半数効果濃度定数を取得する
+    # 各モノアミン受容体への半数効果濃度を取得する
     ec50_data = {}
     ec50_data['DAT'] = adme_data.loc[adme_data['Target'] == 'DAT', 'EC50 (nM)'].iloc[0]
     ec50_data['NAT'] = adme_data.loc[adme_data['Target'] == 'NET', 'EC50 (nM)'].iloc[0]
@@ -49,7 +49,7 @@ def button_click():
     iupac = iupac_entry.get()
     smiles = iupac_to_smiles(iupac)
     adme_data = get_adme_data(smiles)
-    ki_data = get_ki_data(adme_data)
+    IC50_data = get_IC50_data(adme_data)
     ec50_data = get_ec50_data(adme_data)
     result_text.configure(state='normal')
     result_text.delete(1.0, tk.END)

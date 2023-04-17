@@ -49,7 +49,7 @@ def button_click():
     iupac = iupac_entry.get()
     smiles = iupac_to_smiles(iupac)
     adme_data = get_adme_data(smiles)
-    IC50_data = get_IC50_data(adme_data)
+    ki_data = get_ki_data(adme_data)
     ec50_data = get_ec50_data(adme_data)
     result_text.configure(state='normal')
     result_text.delete(1.0, tk.END)
@@ -57,22 +57,25 @@ def button_click():
     result_text.configure(state='disabled')
     adme_data.to_csv(os.path.expanduser("~/Desktop/My.csv"), index=False)
 
-# GUIアプリケーションのウィンドウを作成する
-root = tk.Tk()
-root.title('ADME Data')
+# # GUIアプリケーションのウィンドウを作成する
+# root = tk.Tk()
+# root.title('ADME Data')
 
-# IUPAC名を入力するためのテキストボックスを作成し、ウィンドウ上に配置する
-iupac_entry = tk.Entry(root, width=40)
-iupac_entry.pack(pady=10)
+# # IUPAC名を入力するためのテキストボックスを作成し、ウィンドウ上に配置する
+# iupac_entry = tk.Entry(root, width=40)
+# iupac_entry.pack(pady=10)
 
-# ボタンを作成し、ウィンドウ上に配置する
-button = tk.Button(root, text='Get ADME Data', command=button_click)
-button.pack(pady=10)
+# # ボタンを作成し、ウィンドウ上に配置する
+# button = tk.Button(root, text='Get ADME Data', command=button_click)
+# button.pack(pady=10)
 
-# 結果を表示するためのテキストボックスを作成し、ウィンドウ上に配置する
-result_text = tk.Text(root, width=80, height=20, state='disabled')
-result_text.pack(pady=10)
+# # 結果を表示するためのテキストボックスを作成し、ウィンドウ上に配置する
+# result_text = tk.Text(root, width=80, height=20, state='disabled')
+# result_text.pack(pady=10)
 
-# GUIアプリケーションを実行する
-root.mainloop()
+# # GUIアプリケーションを実行する
+# root.mainloop()
 
+
+A=iupac_to_smiles("1-methyl-phenylpropaneamine")
+print(A)

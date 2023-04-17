@@ -11,17 +11,21 @@ import io
 import sys
 
 class SwissADME:
-    def __init__(self, smiles, proxy=None):
+    def __init__(self, smiles: str, proxy: str | None = None) -> None:
         # Chromeのヘッドレスモードを有効にするオプションを設定します
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument("--headless")
 
         # プロキシ設定
-        self.proxy = None
+        self.proxy: str | None = None
+        self.protocol: str = ""
+        self.addr: str = ""
         if proxy:
-            m = re.match(r"https*://[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+", proxy)
+            m = re.match(r"(https*)://([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+)", proxy)
             if m:
                 self.proxy = proxy
+                self.protocol = m.group(1)
+                self.addr = m.group(2)
                 print(f"proxy setting is enabled. ({self.proxy})")
                 chrome_options.add_argument(f"--proxy-server={self.proxy}")
             else:
@@ -57,22 +61,27 @@ class SwissADME:
         else:
             raise Exception("There is no CSV link.")
 
+        # ウェブドライバを閉じてリソースを解放します
+        driver.quit()
+
         # CSVファイルをダウンロード
-        response = requests.get(url_csv, proxies=self.proxy)
+        response: requests.Response | None = None
+        if proxy:
+            response = requests.get(url_csv, proxies = {self.protocol: self.addr})
+        else:
+            response = requests.get(url_csv)
+
         if response.status_code != 200:
-            raise Exception("Download Error!")
+            raise Exception("CSV file download Error!")
 
         # ダウンロードしたCSVファイルをDataFrameとして読み込みます
         csv_strio = io.StringIO(response.text)
         self.data_frame = pd.read_csv(csv_strio)
 
-        # ウェブドライバを閉じてリソースを解放します
-        driver.quit()
-
     def get(self) -> pd.DataFrame:
         return self.data_frame
 
-def main():
+def main() -> None:
     smiles: str = ""
 
     # コマンドライン引数チェック

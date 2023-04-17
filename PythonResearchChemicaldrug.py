@@ -1,35 +1,20 @@
-import os
-import time
-import random
-import requests
-import tkinter as tk
-from rdkit import Chem
-import cirpy
+#!/bin/env python3
 
-def iupac_to_smiles(iupac):
+import pandas as pd
+import tkinter as tk
+import cirpy
+import asyncio
+from classes.SwissADME import SwissADME
+
+def iupac_to_smiles(iupac: str) -> str:
     return cirpy.resolve(iupac, "smiles")
 
-def get_adme_data(smiles):
+def get_adme_data(smiles: str) -> pd.DataFrame:
     # SwissADMEからADMEデータを取得する
-    # 1.5分待機する
-    time.sleep(90)
-    # ランダムにプロキシを選択する
-    proxies = [
-        {'http':'43.157.66.170:8080'},     # HTTP-HTTPS	Lvl3	Japan country logo Japan	Tokyo		1m
-        {'http' :'139.162.78.109:8080'},   # HTTP-HTTPS	Lvl3	Japan country logo Japan	Tokyo		4m
-        {'http' :'43.153.222.203:8080'},   #	HTTP-HTTPS	Lvl3
-        {'http': '43.138.216.160:8080'},   #        Japan country logo Japan	Tokyo		13m
-        {'http':'43.135.182.214:8080'}	   # HTTP-HTTPS	Lvl3 Japan country logo Japan	Tokyo		5h
-    ]
-    proxy = random.choice(proxies)
-    # プロキシを使用してSwissADMEにアクセスする
-    r = requests.get('http://www.swissadme.ch/', params={'proxy': proxy, 'SMILES': smiles})
-    # 結果を取得した後30s待機する
-    adme_data ='SwissADME.csv'
-    time.sleep(30)
-    return adme_data
+    adme = SwissADME(smiles)
+    return adme.get()
 
-def get_ki_data(adme_data):
+def get_ki_data(adme_data: pd.DataFrame) -> dict[str, str]:
     # 各モノアミン受容体への半数阻害効果定数、半数効果濃度定数を取得する
     ki_data = {}
     ki_data['DAT'] = adme_data.loc[adme_data['Target'] == 'DAT', 'Ki (nM)'].iloc[0]
@@ -37,7 +22,7 @@ def get_ki_data(adme_data):
     ki_data['SERT'] = adme_data.loc[adme_data['Target'] == 'SERT', 'Ki (nM)'].iloc[0]
     return ki_data
 
-def get_ec50_data(adme_data):
+def get_ec50_data(adme_data: pd.DataFrame) -> dict[str, str]:
     # 各モノアミン受容体への半数効果濃度定数を取得する
     ec50_data = {}
     ec50_data['DAT'] = adme_data.loc[adme_data['Target'] == 'DAT', 'EC50 (nM)'].iloc[0]
@@ -45,17 +30,21 @@ def get_ec50_data(adme_data):
     ec50_data['SERT'] = adme_data.loc[adme_data['Target'] == 'SERT', 'EC50 (nM)'].iloc[0]
     return ec50_data
 
-def button_click():
-    iupac = iupac_entry.get()
-    smiles = iupac_to_smiles(iupac)
-    adme_data = get_adme_data(smiles)
-    ki_data = get_ki_data(adme_data)
-    ec50_data = get_ec50_data(adme_data)
+def button_click() -> None:
+    iupac: str = iupac_entry.get()
+    smiles: str = iupac_to_smiles(iupac)
+    adme_data: pd.DataFrame = get_adme_data(smiles)
+    # ki_data = get_ki_data(adme_data)
+    # ec50_data = get_ec50_data(adme_data)
     result_text.configure(state='normal')
     result_text.delete(1.0, tk.END)
-    result_text.insert(tk.END, f'SMILES: {smiles}\n\nDAT:\n  Ki: {ki_data["DAT"]} nM\n  EC50: {ec50_data["DAT"]} nM\n\nNAT:\n  Ki: {ki_data["NAT"]} nM\n  EC50: {ec50_data["NAT"]} nM\n\nSERT:\n  Ki: {ki_data["SERT"]} nM\n  EC50: {ec50_data["SERT"]} nM')
+    # result_text.insert(tk.END, f'SMILES: {smiles}\n\nDAT:\n  Ki: {ki_data["DAT"]} nM\n  EC50: {ec50_data["DAT"]} nM\n\nNAT:\n  Ki: {ki_data["NAT"]} nM\n  EC50: {ec50_data["NAT"]} nM\n\nSERT:\n  Ki: {ki_data["SERT"]} nM\n  EC50: {ec50_data["SERT"]} nM')
+    text: str = ""
+    for _, item in adme_data.iterrows():
+        text = str(item)
+    result_text.insert(tk.END, text)
     result_text.configure(state='disabled')
-    adme_data.to_csv(os.path.expanduser("~/Desktop/My.csv"), index=False)
+    adme_data.to_csv("adme.csv", encoding="utf_8_sig")
 
 # GUIアプリケーションのウィンドウを作成する
 root = tk.Tk()

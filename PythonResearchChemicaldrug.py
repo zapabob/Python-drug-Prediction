@@ -91,4 +91,3 @@ result_text.pack(pady=10)
 
 # GUIアプリケーションを実行する
 root.mainloop()
-

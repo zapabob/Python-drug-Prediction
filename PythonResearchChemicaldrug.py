@@ -3,6 +3,8 @@
 import pandas as pd
 import tkinter as tk
 import classes as cl
+import threading
+import time
 
 def get_adme_data(smiles: str) -> pd.DataFrame:
     # SwissADMEからADMEデータを取得する
@@ -26,11 +28,26 @@ def get_ec50_data(adme_data: pd.DataFrame) -> dict[str, str]:
     return ec50_data
 
 def button_click() -> None:
+    # ボタンを無効化
+    button.configure(state="disabled")
+
+    # メイン処理
+    thread = threading.Thread(target=execute_on_click)
+    thread.start()
+
+def execute_on_click() -> None:
+    # ボタンの表示の切り替え
+    button.configure(text="processing...")
+
+    # IUPAC->SMILES->ADME Data
     iupac: str = iupac_entry.get()
-    smiles: str = cl.SubstanceName(iupac = iupac).get()
+    smiles: str = cl.SubstanceName(iupac=iupac).get()
     adme_data: pd.DataFrame = get_adme_data(smiles)
+
     # ki_data = get_ki_data(adme_data)
     # ec50_data = get_ec50_data(adme_data)
+
+    # 結果の表示
     result_text.configure(state='normal')
     result_text.delete(1.0, tk.END)
     # result_text.insert(tk.END, f'SMILES: {smiles}\n\nDAT:\n  Ki: {ki_data["DAT"]} nM\n  EC50: {ec50_data["DAT"]} nM\n\nNAT:\n  Ki: {ki_data["NAT"]} nM\n  EC50: {ec50_data["NAT"]} nM\n\nSERT:\n  Ki: {ki_data["SERT"]} nM\n  EC50: {ec50_data["SERT"]} nM')
@@ -39,7 +56,22 @@ def button_click() -> None:
         text = str(item)
     result_text.insert(tk.END, text)
     result_text.configure(state='disabled')
+
+    # CSV出力
     # adme_data.to_csv("adme.csv", encoding="utf_8_sig")
+
+    # ボタンを有効化する
+    thread = threading.Thread(target=activate_button, args=[10])
+    thread.start()
+
+def activate_button(dulation: int) -> None:
+    # dulationで指定された秒数でボタンを有効化する
+    for i in range(dulation, 0, -1):
+        button.configure(text=f"{i}")
+        time.sleep(1)
+
+    button.configure(text="Get ADME Data")
+    button.configure(state="normal")
 
 # GUIアプリケーションのウィンドウを作成する
 root = tk.Tk()

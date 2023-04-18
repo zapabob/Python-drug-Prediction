@@ -11,16 +11,16 @@ def get_adme_data(smiles: str) -> pd.DataFrame:
     adme = cl.SwissADME(smiles)
     return adme.get()
 
-def get_ki_data(adme_data: pd.DataFrame) -> dict[str, str]:
-    # 各モノアミン受容体への半数阻害効果定数、半数効果濃度定数を取得する
-    ki_data = {}
-    ki_data['DAT'] = adme_data.loc[adme_data['Target'] == 'DAT', 'Ki (nM)'].iloc[0]
-    ki_data['NAT'] = adme_data.loc[adme_data['Target'] == 'NET', 'Ki (nM)'].iloc[0]
-    ki_data['SERT'] = adme_data.loc[adme_data['Target'] == 'SERT', 'Ki (nM)'].iloc[0]
-    return ki_data
+def get_ic50_data(adme_data: pd.DataFrame) -> dict[str, str]:
+    # 各モノアミン受容体への半数阻害効果濃度を取得する
+    IC50_data = {}
+    IC50_data['DAT'] = adme_data.loc[adme_data['Target'] == 'DAT', 'Ki (nM)'].iloc[0]
+    IC50_data['NAT'] = adme_data.loc[adme_data['Target'] == 'NET', 'Ki (nM)'].iloc[0]
+    IC50_data['SERT'] = adme_data.loc[adme_data['Target'] == 'SERT', 'Ki (nM)'].iloc[0]
+    return IC50_data
 
 def get_ec50_data(adme_data: pd.DataFrame) -> dict[str, str]:
-    # 各モノアミン受容体への半数効果濃度定数を取得する
+    # 各モノアミン受容体への半数効果濃度を取得する
     ec50_data = {}
     ec50_data['DAT'] = adme_data.loc[adme_data['Target'] == 'DAT', 'EC50 (nM)'].iloc[0]
     ec50_data['NAT'] = adme_data.loc[adme_data['Target'] == 'NET', 'EC50 (nM)'].iloc[0]
@@ -44,7 +44,7 @@ def execute_on_click() -> None:
     smiles: str = cl.SubstanceName(iupac=iupac).get()
     adme_data: pd.DataFrame = get_adme_data(smiles)
 
-    # ki_data = get_ki_data(adme_data)
+    # ki_data = get_ic50_data(adme_data)
     # ec50_data = get_ec50_data(adme_data)
 
     # 結果の表示

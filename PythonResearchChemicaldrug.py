@@ -39,7 +39,7 @@ def button_click() -> None:
         text = str(item)
     result_text.insert(tk.END, text)
     result_text.configure(state='disabled')
-    adme_data.to_csv("adme.csv", encoding="utf_8_sig")
+    # adme_data.to_csv("adme.csv", encoding="utf_8_sig")
 
 # GUIアプリケーションのウィンドウを作成する
 root = tk.Tk()

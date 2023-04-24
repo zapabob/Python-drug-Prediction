@@ -1,42 +1,13 @@
-<<<<<<< HEAD
-import os
-import tkinter as tk
-from tkinter import messagebox
-from rdkit import Chem
-from selenium import webdriver
-import pandas as pd
-=======
 #!/bin/env python3
 
 import pandas as pd
 import tkinter as tk
 import classes as cl
 import threading
->>>>>>> origin/main
 import time
 
 def get_adme_data(smiles: str) -> pd.DataFrame:
     # SwissADMEからADMEデータを取得する
-<<<<<<< HEAD
-    # 1.5分待機する
-    time.sleep(90)
-    # ランダムにプロキシを選択する
-    proxies = [ 
-         { 'http' : '43.157.66.170:8080' }
-        ,{ 'http' : '139.162.78.109:8080' }
-        ,{ 'https' : '43.153.222.203:8080' }
-        ,{ 'https' : '43.138.216.160:8080' }
-        ,{ 'https' : '43.135.182.214:8080' }	
-
-    ]
-    proxy = random.choice(proxies)
-    # プロキシを使用してSwissADMEにアクセスする
-    r = requests.get('http://www.swissadme.ch/', params={'proxy': proxy, 'SMILES': smiles})
-    # 結果を取得するまで30秒待機
-    time.sleep(30)
-adme_data ='SwissADME.csv'
-return adme_data
-=======
     adme = cl.SwissADME(smiles)
     return adme.get()
 
@@ -47,7 +18,6 @@ def get_ic50_data(adme_data: pd.DataFrame) -> dict[str, str]:
     IC50_data['NAT'] = adme_data.loc[adme_data['Target'] == 'NET', 'Ki (nM)'].iloc[0]
     IC50_data['SERT'] = adme_data.loc[adme_data['Target'] == 'SERT', 'Ki (nM)'].iloc[0]
     return IC50_data
->>>>>>> origin/main
 
 def get_ec50_data(adme_data: pd.DataFrame) -> dict[str, str]:
     # 各モノアミン受容体への半数効果濃度を取得する
@@ -80,9 +50,6 @@ def execute_on_click() -> None:
     # 結果の表示
     result_text.configure(state='normal')
     result_text.delete(1.0, tk.END)
-<<<<<<< HEAD
-    result_text.insert(tk.END, {SMILES: {smiles} \Ki:\DAT: {ki_data["DAT"]}\NAT: {ki_data["NAT"]}\SERT: {ki_data["SERT"]}\EC50:\DAT: {ec50_data["DAT"]}\NAT: {ec50_data["NAT"]}\S\NAT: {ki_data["NAT"]}\SERT: {ki_data["SERT"]}EC50:DAT: {ec50_data["DAT"]NAT: {ec50_data["NAT"]}S_data["NAT"]}SERT: {ki_data["SERT"]}EC50:DAT: {ec50_data["DAT"]}NAT: {ec50_data["NAT"]}S
-=======
     # result_text.insert(tk.END, f'SMILES: {smiles}\n\nDAT:\n  Ki: {ki_data["DAT"]} nM\n  EC50: {ec50_data["DAT"]} nM\n\nNAT:\n  Ki: {ki_data["NAT"]} nM\n  EC50: {ec50_data["NAT"]} nM\n\nSERT:\n  Ki: {ki_data["SERT"]} nM\n  EC50: {ec50_data["SERT"]} nM')
     text: str = ""
     for _, item in adme_data.iterrows():
@@ -124,4 +91,3 @@ result_text.pack(pady=10)
 
 # GUIアプリケーションを実行する
 root.mainloop()
->>>>>>> origin/main

@@ -1,10 +1,7 @@
 #!/bin/env python3
 
 import pandas as pd
-import tkinter as tk
 import classes as cl
-import threading
-import time
 
 def get_ic50_data(adme_data: pd.DataFrame) -> dict[str, str]:
     # 各モノアミン受容体への半数阻害効果濃度を取得する

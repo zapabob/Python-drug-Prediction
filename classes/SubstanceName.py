@@ -14,4 +14,21 @@ class SubstanceName:
             raise Exception("Either smiles or iupac must be provided.")
 
     def get(self) -> str:
-        return self.converted_name
+        # if self.converted_name is None, this method returns an empty string.
+        return self.converted_name if self.converted_name is not None else ""
+
+
+# the main function to test the class
+def main() -> None:
+    # make the instance of the class
+    substance_name = SubstanceName(iupac='1,2,3,4-teoquinoline')
+
+    # get the converted name
+    converted_name = substance_name.get()
+
+    # print the converted name
+    print(converted_name)
+
+
+if __name__ == "__main__":
+    main()

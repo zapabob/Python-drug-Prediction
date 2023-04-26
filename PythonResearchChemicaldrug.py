@@ -1,7 +1,7 @@
 #!/bin/env python3
 
 import pandas as pd
-import classes as cl
+from classes import MainWindow
 
 def get_ic50_data(adme_data: pd.DataFrame) -> dict[str, str]:
     # 各モノアミン受容体への半数阻害効果濃度を取得する
@@ -23,7 +23,7 @@ def get_ec50_data(adme_data: pd.DataFrame) -> dict[str, str]:
 # This function has no arguments and returns no values.
 def main() -> None:
     # make the main window.
-    cl.MainWindow.get_instance("ADME Data")
+    MainWindow("ADME Data")
 
 
 if __name__ == "__main__":

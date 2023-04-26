@@ -8,6 +8,20 @@ import time
 import threading
 import random
 
+
+def is_prime(number: int) -> bool:
+    if number < 2:
+        return False
+    for i in range(2, number):
+        if number % i == 0:
+            return False
+    return True
+
+
+def roll_dice() -> int:
+    return random.randint(1, 6)
+
+
 # The singleton class to display the main window.
 class MainWindow:
     # The singleton instance.
@@ -30,6 +44,8 @@ class MainWindow:
         else:
             MainWindow.__instance = self
 
+        self.stop_flg: bool = False
+
         # set the window title
         self.title: str = title
 
@@ -44,6 +60,9 @@ class MainWindow:
     def make_window(self) -> None:
         # initialize the window
         self.window = tk.Tk()
+
+        # set the event handler when closing the window
+        self.window.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         # set the title of the window
         self.window.title(self.title)
@@ -81,8 +100,17 @@ class MainWindow:
         self.result_text.insert(tk.END, text)
         self.result_text.configure(state='disabled')
 
-        # launch the thread to activate the button after random seconds in 1 to 30.
-        dulation: int = random.randint(1, 30)
+        # determine the time to wait
+        W_N: int = 5
+        dulation: int = 0
+        while True:
+            dice_result: int = roll_dice()
+            if is_prime(dice_result):
+                break
+            else:
+                dulation += dice_result * W_N
+
+        # launch thread to activate the button
         threading.Thread(target=self.activate_button, args=(dulation,)).start()
 
 
@@ -92,9 +120,20 @@ class MainWindow:
     def activate_button(self, dulation: int) -> None:
         # change button text to count down
         for i in range(dulation, 0, -1):
+            # ウィンドウが閉じられたらスレッドを終了する
+            if self.stop_flg:
+                return
+
+            # ボタンの表示を変更する
             self.button.configure(text=f"{i}")
             time.sleep(1)
         
         # change the button text to the initial value and change tht button state to normal
         self.button.configure(text="Get ADME Data")
         self.button.configure(state='normal')
+
+
+    # the event handler when the window is closed
+    def on_closing(self) -> None:
+        self.stop_flg = True
+        self.window.destroy()

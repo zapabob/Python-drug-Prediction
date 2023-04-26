@@ -2,6 +2,9 @@
 
 import requests
 import re
+import json
+from typing import Any
+import sys
 
 
 class PostJson:
@@ -48,19 +51,40 @@ class PsychonautWikiAPI:
                 ret += line
         return ret
 
-    def get_result(self) -> str:
-        return self.result
+    def get_result(self) -> Any:
+        jsondata = json.loads(self.result)
+
+        if jsondata["data"]["substances"] == []:
+            raise Exception("The substance name is not found.")
+
+        return jsondata
 
 
 def main() -> None:
-    # make the instance of the class
-    psychonautwiki_api = PsychonautWikiAPI(substance_name="methamphetamine")
+    # get arguments
+    if len(sys.argv) < 2:
+        print(f"Usage: {sys.argv[0]} <substance_name> [json_file_name]")
+        return
+    else:
+        substance_name = sys.argv[1]
+        if len(sys.argv) == 3:
+            json_file_name = sys.argv[2]
+        else:
+            json_file_name = ""
 
-    # get the result
-    result: str = psychonautwiki_api.get_result()
+    try:
+        result: Any = PsychonautWikiAPI(substance_name).get_result()
+    except Exception as e:
+        print(e)
+        return
 
-    # print the result
-    print(result)
+    # save the json data
+    if json_file_name != "":
+        with open(json_file_name, "w") as f:
+            json.dump(result, f, indent=4)
+            print(f"Saved the json data to {json_file_name}.")
+    else:
+        print(result)
 
 
 if __name__ == "__main__":

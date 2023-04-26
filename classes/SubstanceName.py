@@ -21,7 +21,7 @@ class SubstanceName:
 # the main function to test the class
 def main() -> None:
     # make the instance of the class
-    substance_name = SubstanceName(iupac='1,2,3,4-teoquinoline')
+    substance_name = SubstanceName(iupac="(RS)-N-methyl-1-phenylpropan-2-amine")
 
     # get the converted name
     converted_name = substance_name.get()

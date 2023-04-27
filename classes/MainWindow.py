@@ -2,7 +2,8 @@
 
 from typing import Optional
 import tkinter as tk
-import classes as cl
+import SwissADME
+import SubstanceName
 import pandas as pd
 import time
 import threading
@@ -88,8 +89,8 @@ class MainWindow:
 
         # get the IUPAC name from the text box
         iupac: str = self.text_box.get()
-        smiles: str = cl.SubstanceName(iupac=iupac).get()
-        adme_data: pd.DataFrame = cl.SwissADME(smiles).get()
+        smiles: str = SubstanceName(iupac=iupac).get()
+        adme_data: pd.DataFrame = SwissADME(smiles).get()
 
         # display results of adme_data in the text box
         self.result_text.configure(state='normal')

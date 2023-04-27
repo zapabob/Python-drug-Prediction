@@ -10,3 +10,4 @@ calculate and speculate research chemical
 - [SwissTargetPrediction](http://www.swisstargetprediction.ch/)
 - [SwissADME](http://www.swissadme.ch/)
 - [Chemical Identifier Resolver](https://cactus.nci.nih.gov/chemical/structure)
+- [Protein Data Bank](https://www.rcsb.org/)

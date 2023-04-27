@@ -72,6 +72,7 @@ def main() -> None:
         else:
             json_file_name = ""
 
+    # PsychonautWikiよりデータを取得
     try:
         result: Any = PsychonautWikiAPI(substance_name).get_result()
     except Exception as e:

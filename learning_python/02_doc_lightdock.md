@@ -8,7 +8,7 @@
 
 ## LightDockのセットアップ
 ```bash
-lightdock3_setup.py -s 400 -g 200 --noxt --noh 02_DAT.pdb 02_meth.pdb
+lightdock3_setup.py -s 400 -g 200 --noxt --noh 02_Receptor.pdb 02_meth.pdb
 ```
 
 ## ドッキングシミュレーションの実行
@@ -18,5 +18,5 @@ aaa
 
 ## 中間ファイルの消し方
 ```bash
-rm -rf init swarm* setup.json lightdock*
+./02_clean.sh
 ```

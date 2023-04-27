@@ -6,7 +6,8 @@ from Bio.PDB import PDBParser, PDBIO, Select, Residue, PDBList
 import os
 from vina import Vina
 
-class GeneratePDB:
+
+class Ligand:
     def __init__(self, smiles: str) -> None:
         self.mol = Chem.MolFromSmiles(smiles)
         self.mol = Chem.AddHs(self.mol)
@@ -17,60 +18,37 @@ class GeneratePDB:
     def draw(self, filename: str) -> None:
         Draw.MolsToGridImage([self.mol], molsPerRow=1, subImgSize=(500, 500)).save(filename)
 
+
     def write(self, file_name: str) -> None:
         Chem.rdmolfiles.MolToPDBFile(self.mol, file_name)
 
 
 # The class to get PDB file from PDB ID
-class GetPDB:
+class Receptor:
     def __init__(self, pdb_id: str) -> None:
         self.pdb_id = pdb_id
         self.pdb_list = PDBList()
-        self.pdb_list.retrieve_pdb_file(self.pdb_id, pdir=".", file_format="pdb", overwrite=True)
-
-        self.remove_ligand_from_pdb(f"pdb{self.pdb_id.lower()}.ent")
-
-    # remove ligands
-    def remove_ligand_from_pdb(self, filename: str) -> None:
-        mol = Chem.MolFromPDBFile(filename, removeHs=False, sanitize=False)
-        new_mol = Chem.EditableMol(Chem.Mol())
-
-        for atom in mol.GetAtoms():
-            if atom.GetPDBResidueInfo().GetIsHeteroAtom() == False:
-                new_mol.AddAtom(atom)
-
-        final_mol = new_mol.GetMol()
-
-        with PDBWriter(filename) as writer:
-            writer.write(final_mol)
 
 
-# class StardardResidues(Select):
-#     def accept_residue(self, residue: Residue) -> bool:
-#         return residue.get_resname() in ["ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU", "GLY", "HIS",
-#                                          "ILE", "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP",
-#                                          "TYR", "VAL"]
+    # write the cif file
+    def write(self, filename: str) -> None:
+        self.pdb_list.retrieve_pdb_file(self.pdb_id, pdir=".", file_format="mmCif", overwrite=True)
 
-# # remove non-standard residues
-# def remove_non_standard_residues(input_pdb: str, output_pdb: str) -> None:
-#     parser = PDBParser()
-#     structure = parser.get_structure("protein", input_pdb)
-#     io = PDBIO()
-#     io.set_structure(structure)
-#     io.save(output_pdb, StardardResidues())
+        # rename the file
+        os.rename(f"{self.pdb_id.lower()}.cif", f"{filename}.cif")
 
 
 # generate the legand pdb file
 def generate_ligand_pdb(smiles: str, filename: str, write_image: bool = False) -> None:
     # make the instance of the class
-    generate_pdb = GeneratePDB(smiles)
+    lig = Ligand(smiles)
 
     # draw the molecule
     if write_image:
-        generate_pdb.draw(f"{filename}.png")
+        lig.draw(f"{filename}.png")
 
     # write the pdb file
-    generate_pdb.write(f"{filename}.pdbqt")
+    lig.write(f"{filename}.pdb")
 
     # post-process the pdb file
     # replace UNL with 3 spaces
@@ -82,13 +60,10 @@ def generate_ligand_pdb(smiles: str, filename: str, write_image: bool = False) -
         f.writelines(result)
 
 
-# genrate the receptor pdb file
-def generate_receptor_pdb(pdb_id: str, filename: str) -> None:
+# genrate the receptor cif file
+def generate_receptor_cif(pdb_id: str, filename: str) -> None:
     # get the pdb file
-    GetPDB(pdb_id) # Dopamine Transporter
-
-    # rename the pdb file
-    os.rename(f"pdb{pdb_id.lower()}.ent", f"{filename}.pdbqt")
+    Receptor(pdb_id).write(filename)
 
 
 # the main function to test the class
@@ -97,23 +72,23 @@ def main() -> None:
     LIGAND_SMILES: str = "CNC(C)Cc1ccccc1"
 
     RECEPTOR_FILE_NAME: str = "02_Receptor"
-    RECEPTOR_PDB_ID: str = "4M48"
+    RECEPTOR_PDB_ID: str = "4XP1"
 
-    # generate the regand pdbqt file
+    # generate the regand pdb file
     generate_ligand_pdb(LIGAND_SMILES, LIGAND_FILE_NAME)
 
     # generate the receptor pdb file
-    generate_receptor_pdb(RECEPTOR_PDB_ID, RECEPTOR_FILE_NAME)
+    generate_receptor_cif(RECEPTOR_PDB_ID, RECEPTOR_FILE_NAME)
 
-    # docking with vina
-    print("Simulation Start")
-    v = Vina(sf_name="vina", cpu=16)
-    v.set_receptor(f"{RECEPTOR_FILE_NAME}.pdbqt")
-    v.set_ligand_from_file(f"{LIGAND_FILE_NAME}.pdbqt")
-    v.compute_vina_maps(center=[15.190, 53.903, 16.917], box_size=[20, 20, 20])
-    v.dock(exhaustiveness=32, out="out.pdbqt")
-    v.write_poses("poses.pdbqt", n_poses=5, overwrite=True)
-    print("Simulation End")
+    # # docking with vina
+    # print("Simulation Start")
+    # v = Vina(sf_name="vina", cpu=16)
+    # v.set_receptor(f"{RECEPTOR_FILE_NAME}.pdbqt")
+    # v.set_ligand_from_file(f"{LIGAND_FILE_NAME}.pdbqt")
+    # v.compute_vina_maps(center=[15.190, 53.903, 16.917], box_size=[20, 20, 20])
+    # v.dock(exhaustiveness=32, out="out.pdbqt")
+    # v.write_poses("poses.pdbqt", n_poses=5, overwrite=True)
+    # print("Simulation End")
 
 
 if __name__ == "__main__":

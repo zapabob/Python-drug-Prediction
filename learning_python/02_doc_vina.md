@@ -1,14 +1,14 @@
-# LightDockの使用方法
+# AutoDock Vinaの使用方法
 
 ## SMILES記法からPDBファイルを生成
 ```bash
-./02_lightdock.py
+./02_vina.py
 ```
 これで**02_meth.pdb**というファイルができる。
 
-## LightDockのセットアップ
+## AutoDock Vinaのセットアップ
 ```bash
-lightdock3_setup.py -s 400 -g 200 --noxt --noh 02_Receptor.pdb 02_meth.pdb
+AutoDock Vina3_setup.py -s 400 -g 200 --noxt --noh 02_Receptor.pdb 02_meth.pdb
 ```
 
 ## ドッキングシミュレーションの実行

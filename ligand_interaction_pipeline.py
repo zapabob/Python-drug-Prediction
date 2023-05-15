@@ -1,17 +1,26 @@
 #!/bin/env python3
-
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split, GridSearchCV, KFold
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
-
 # データの読み込み
 data = pd.read_csv('SwissADME.csv')
 
 # 前処理（欠損値補完、外れ値除去、カテゴリ変数のエンコーディングなど）
 # ...
+#欠損値の補完
+data.fillna(data.mean(), inplace=True)
+#カテゴリ変数のエンコーディング
+data = pd.get_dummies(data, drop_first=True)
+#外れ値の処理
+#外れ値の処理（IQR法を用いた外れ値の検出と削除）
+Q1 = data.quantile(0.25)
+Q3 = data.quantile(0.75)
+IQR = Q3 - Q1
+
+data = data[~((data < (Q1 - 1.5 * IQR)) | (data > (Q3 + 1.5 * IQR))).any(axis=1)]
 
 # データの分割
 X = data.drop('target', axis=1)
@@ -28,9 +37,9 @@ model = RandomForestClassifier()
 
 # ハイパーパラメータチューニング
 param_grid = {
-    'n_estimators': [10, 50, 100, 200],
-    'max_depth': [None, 10, 20, 30],
-    'min_samples_split': [2, 5, 10]
+'n_estimators': [10, 50, 100, 200],
+'max_depth': [None, 10, 20, 30],
+'min_samples_split': [2, 5, 10]
 }
 grid_search = GridSearchCV(model, param_grid, cv=5)
 grid_search.fit(X_train_scaled, y_train)

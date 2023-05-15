@@ -1,5 +1,4 @@
 #!/bin/env python3
-import random
 import pandas as pd
 import tkinter as tk
 import classes as cl
@@ -41,7 +40,7 @@ def get_ic50_data(adme_data: pd.DataFrame) -> dict[str, str]:
     IC50_data['NAT'] = adme_data.loc[adme_data['Target'] == 'NET', 'Ki (nM)'].iloc[0]
     IC50_data['SERT'] = adme_data.loc[adme_data['Target'] == 'SERT', 'Ki (nM)'].iloc[0]
     return IC50_data
->>>>>>> origin/main
+
 
 def get_ec50_data(adme_data: pd.DataFrame) -> dict[str, str]:
     # 各モノアミン受容体への半数効果濃度を取得する
@@ -51,17 +50,13 @@ def get_ec50_data(adme_data: pd.DataFrame) -> dict[str, str]:
     ec50_data['SERT'] = adme_data.loc[adme_data['Target'] == 'SERT', 'EC50 (nM)'].iloc[0]
     return ec50_data
 
-def button_click() -> None:
-    # ボタンを無効化
-    button.configure(state="disabled")
 
-    # メイン処理
-    thread = threading.Thread(target=execute_on_click)
-    thread.start()
+# the main function
+# This function has no arguments and returns no values.
+def main() -> None:
+    # make the main window.
+    MainWindow("ADME Data")
 
-def execute_on_click() -> None:
-    # ボタンの表示の切り替え
-    button.configure(text="processing...")
 
     # IUPAC->SMILES->ADME Data
     iupac: str = iupac_entry.get()

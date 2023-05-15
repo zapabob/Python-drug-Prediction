@@ -74,9 +74,6 @@ def execute_on_click() -> None:
     # 結果の表示
     result_text.configure(state='normal')
     result_text.delete(1.0, tk.END)
-<<<<<<< HEAD
-    result_text.insert(tk.END, {SMILES: {smiles} \Ki:\DAT: {ki_data["DAT"]}\NAT: {ki_data["NAT"]}\SERT: {ki_data["SERT"]}\EC50:\DAT: {ec50_data["DAT"]}\NAT: {ec50_data["NAT"]}\S\NAT: {ki_data["NAT"]}\SERT: {ki_data["SERT"]}EC50:DAT: {ec50_data["DAT"]NAT: {ec50_data["NAT"]}S_data["NAT"]}SERT: {ki_data["SERT"]}EC50:DAT: {ec50_data["DAT"]}NAT: {ec50_data["NAT"]}S
-=======
     # result_text.insert(tk.END, f'SMILES: {smiles}\n\nDAT:\n  Ki: {ki_data["DAT"]} nM\n  EC50: {ec50_data["DAT"]} nM\n\nNAT:\n  Ki: {ki_data["NAT"]} nM\n  EC50: {ec50_data["NAT"]} nM\n\nSERT:\n  Ki: {ki_data["SERT"]} nM\n  EC50: {ec50_data["SERT"]} nM')
     text: str = ""
     for _, item in adme_data.iterrows():
@@ -118,4 +115,3 @@ result_text.pack(pady=10)
 
 # GUIアプリケーションを実行する
 root.mainloop()
->>>>>>> origin/main

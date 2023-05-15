@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 # データの読み込み
-data = pd.read_csv('SwissADME.csv')
+data = pd.read_csv('A.csv')
 
 # 前処理（欠損値補完、外れ値除去、カテゴリ変数のエンコーディングなど）
 # ...

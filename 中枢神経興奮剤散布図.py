@@ -29,6 +29,8 @@ def plot_data(data_x, data_y):
         plt.plot(x, reg.predict(x), color='red')
     plt.xlabel('Log(MW)')
     plt.ylabel('XLOGP')
+    plt.xlim([np.min([np.min(dx) for dx in data_x]), np.max([np.max(dx) for dx in data_x])])  # x軸の表示範囲を設定
+    plt.ylim([np.min([np.min(dy) for dy in data_y]), np.max([np.max(dy) for dy in data_y])])  # y軸の表示範囲を設定
     plt.legend()
     plt.show()
 

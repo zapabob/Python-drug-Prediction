@@ -1,50 +1,46 @@
 import numpy as np
-from scipy.integrate import odeint
-from scipy.integrate import trapz
 import matplotlib.pyplot as plt
+from scipy.integrate import trapz  # AUCを求めるための関数
 
-def model(C, T, k):
-    dCdT = -k * C
-    return dCdT
+def one_compartment_model(dose_mg, weight_kg, Vd_L, half_life_h, MW, t_end=24, num_points=1000):
+    k_el = np.log(2) / half_life_h  # 排泄定数（h^-1）
 
-# ParameTers
-dose_mg = 80  # mg
-BA = 0.98  # BioavailabiliTy
-dose = dose_mg * BA  # AdjusTed for bioavailabiliTy
-MW = 177.24  # molecular weighT
-dose_mol = dose / MW  # ConverT dose To moles
-bodyweight = 60  # kg
-Vd = 36  # DisTribuTion volume in L
-dose_mol_per_L = dose_mol / Vd  # IniTial concenTraTion in mol/L
-dose_mg_per_L = dose_mol_per_L * MW  # IniTial concenTraTion in mg/L
+    # 投与量をモル単位に変換
+    dose_mol = dose_mg / MW * 1e-3  # モル単位への変換（mol）
 
-# EliminaTion raTe consTanT
-Cl = 1  # Clearance in L/h, assumed To be 1 L/h for This example
-k = Cl / Vd  # per hour
+    # 初期濃度（モル/L）
+    C0_mol_per_L = dose_mol / Vd_L
 
-# Time poinTs
-T = np.linspace(0, 6, 1000)  # 0 To 6 hours
+    # 時間範囲を設定
+    t = np.linspace(0, t_end, num_points)  # 時間（h）
 
-# Solve ODE
-C = odeint(model, dose_mg_per_L, T, args=(k,))
+    # 1コンパートメントモデルの濃度-時間曲線を計算
+    C_mol_per_L = C0_mol_per_L * np.exp(-k_el * t)
+    
+    return t, C_mol_per_L
 
-# CalculaTe AUC
-AUC = trapz(C, T)
+def plot_and_save(t, C_mol_per_L, filename='one_compartment_model.png'):
+    plt.figure(figsize=(10, 6))
+    plt.plot(t, C_mol_per_L)
+    plt.xlabel('Time (h)')
+    plt.ylabel('Drug concentration (mol/L)')
+    plt.title('One-compartment model: concentration vs time')
+    plt.grid(True)
+    plt.savefig(filename)
+    plt.show()
 
-# CreaTe figure
-fig, ax = plt.subplots()
+def calculate_auc(t, C_mol_per_L):
+    AUC = trapz(C_mol_per_L, t)
+    return AUC
 
-# PloT concenTraTion over Time
-ax.plot(T, C, label='Concentration (mg/L)')
-ax.set_xlabel('Time (hours)')
-ax.set_ylabel('Concentration (mg/L)')
-ax.legend()
-
-# Display AUC
-print('AUC:', AUC)
-
-# Save figure To deskTop
-fig.savefig('~/Desktop/pharmacokinetics.png')
-
-# Show The ploT
-plt.show()
+if __name__ == "__main__":
+    dose_mg = 80
+    weight_kg = 60
+    Vd_L = 36
+    half_life_h = 4.5
+    MW = 177.24
+    
+    t, C_mol_per_L = one_compartment_model(dose_mg, weight_kg, Vd_L, half_life_h, MW)
+    plot_and_save(t, C_mol_per_L)
+    AUC = calculate_auc(t, C_mol_per_L)
+    print(f"The Area Under the Curve (AUC) is {AUC} mol*h/L")

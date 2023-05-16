@@ -1,5 +1,4 @@
 import os
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
@@ -7,26 +6,27 @@ from sklearn.linear_model import LinearRegression
 # ファイルのリスト
 files = ['MPH.csv','PR.csv','4MMC.csv','4mar.csv','A.csv','Cocaine.csv','MA.csv']
 
-# 各ファイルからデータを読み込み、MWとXLogPのデータを取得
+# 各ファイルからデータを読み込み、MWあたりのXLoGPのデータを取得
 def process_files(files):
     data = []
     for file in files:
         if os.path.isfile(file):
             df = pd.read_csv(file)
-            data.append(df[['MW', 'XLogP']])
+            XLoGP_per_mw = df['XLoGP'] / df['MW']  # MWあたりのXLoGPを計算
+            data.append(XLoGP_per_mw)
     return data
 
 # データを散布図で表示し、回帰直線を描く
 def plot_data(data):
     plt.figure(figsize=(10, 6))
+    x = np.array(range(len(data))).reshape(-1, 1)
     for i, d in enumerate(data):
-        plt.scatter(d['MW'], d['XLogP'], label=files[i].split('.')[0])  # 各CSVファイルのデータを散布図で表示
-        x = d['MW'].values.reshape(-1, 1)
-        y = d['XLogP'].values.reshape(-1, 1)
-        reg = LinearRegression().fit(x, y)
+        plt.scatter([i+1]*len(d), d, label=files[i].split('.')[0])  # 各CSVファイルのデータを散布図で表示
+        reg = LinearRegression().fit(x, d.values.reshape(-1, 1))
         plt.plot(x, reg.predict(x), color='red')
-    plt.xlabel('MW')
-    plt.ylabel('XLogP')
+    plt.xlabel('File')
+    plt.ylabel('XLoGP per MW')
+    plt.xticks(range(1, len(files)+1), [f.split('.')[0] for f in files])
     plt.legend()
     plt.show()
 

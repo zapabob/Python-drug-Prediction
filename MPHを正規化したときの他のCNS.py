@@ -14,7 +14,7 @@ def process_files(files):
         if os.path.isfile(file):
             df = pd.read_csv(file)
             if file == 'MPH.csv':
-                mph_cns = df['MPH']  # MPHのCNS活性値を取得
+                mph_cns = df['CNS']  # MPHのCNS活性値を取得
             else:
                 df['Normalized CNS'] = df['CNS'] / mph_cns
                 data.append(df['Normalized CNS'])

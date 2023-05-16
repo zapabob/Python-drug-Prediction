@@ -44,7 +44,7 @@ ax.legend()
 print('AUC:', AUC)
 
 # Save figure To deskTop
-fig.savefig('~/DeskTop/pharmacokinetics.png')
+fig.savefig('~/Desktop/pharmacokinetics.png')
 
 # Show The ploT
 plt.show()

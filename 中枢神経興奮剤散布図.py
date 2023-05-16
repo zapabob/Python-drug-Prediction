@@ -23,10 +23,11 @@ def plot_data(data):
     x = np.array(range(len(data))).reshape(-1, 1)
     for i, d in enumerate(data):
         plt.scatter([i+1]*len(d), d, label=files[i].split('.')[0])  # 各CSVファイルのデータを散布図で表示
-        reg = LinearRegression().fit(x, d.values.reshape(-1, 1))
-        plt.plot(x, reg.predict(x), color='red')
+        reg = LinearRegression().fit(x, np.log1p(d.values.reshape(-1, 1)))
+        plt.plot(x, np.exp(reg.predict(x)), color='red')
     plt.xlabel('File')
     plt.ylabel('XLOGP * MW')
+    plt.yscale('log')  # Y軸を対数スケールに設定
     plt.xticks(range(1, len(files)+1), [f.split('.')[0] for f in files])
     plt.legend()
     plt.show()

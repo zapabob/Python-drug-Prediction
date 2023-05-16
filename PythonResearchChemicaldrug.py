@@ -1,4 +1,6 @@
 #!/bin/env python3
+from curses import BUTTON1_CLICKED
+import random
 import pandas as pd
 import tkinter as tk
 import classes as cl
@@ -55,7 +57,7 @@ def get_ec50_data(adme_data: pd.DataFrame) -> dict[str, str]:
 # This function has no arguments and returns no values.
 def main() -> None:
     # make the main window.
-    MainWindow("ADME Data")
+    cl.MainWindow("ADME Data")
 
 
     # IUPAC->SMILES->ADME Data
@@ -83,9 +85,9 @@ def main() -> None:
     thread = threading.Thread(target=activate_button, args=[10])
     thread.start()
 
-def activate_button(dulation: int) -> None:
-    # dulationで指定された秒数でボタンを有効化する
-    for i in range(dulation, 0, -1):
+def activate_button(duration: int) -> None:
+    # durationで指定された秒数でボタンを有効化する
+    for i in range(duration, 0, -1):
         button.configure(text=f"{i}")
         time.sleep(1)
 
@@ -98,15 +100,15 @@ root.title('ADME Data')
 
 # IUPAC名を入力するためのテキストボックスを作成し、ウィンドウ上に配置する
 iupac_entry = tk.Entry(root, width=40)
-iupac_entry.pack(pady=10)
+iupac_entry.pack(paddy=10)
 
 # ボタンを作成し、ウィンドウ上に配置する
-button = tk.Button(root, text='Get ADME Data', command=button_click)
-button.pack(pady=10)
+button = tk.Button(root, text='Get ADME Data', command=BUTTON1_CLICKED)
+button.pack(paddy=10)
 
 # 結果を表示するためのテキストボックスを作成し、ウィンドウ上に配置する
 result_text = tk.Text(root, width=80, height=20, state='disabled')
-result_text.pack(pady=10)
+result_text.pack(paddy=10)
 
 # GUIアプリケーションを実行する
 root.mainloop()

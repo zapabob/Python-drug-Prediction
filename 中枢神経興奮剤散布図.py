@@ -13,7 +13,7 @@ def process_files(files):
     for file in files:
         if os.path.isfile(file):
             df = pd.read_csv(file)
-            XLOGP_per_MW = df['XLOGP'] / df['MW']  # MWあたりのXLOGPを計算
+            XLOGP_per_MW = df['XLOGP'] * df['MW']  # MW*XLOGPを計算
             data.append(XLOGP_per_MW)
     return data
 
@@ -26,7 +26,7 @@ def plot_data(data):
         reg = LinearRegression().fit(x, d.values.reshape(-1, 1))
         plt.plot(x, reg.predict(x), color='red')
     plt.xlabel('File')
-    plt.ylabel('XLOGP per MW')
+    plt.ylabel('XLOGP * MW')
     plt.xticks(range(1, len(files)+1), [f.split('.')[0] for f in files])
     plt.legend()
     plt.show()

@@ -4,24 +4,24 @@ from scipy.stats import norm
 import numpy as np
 
 # CSVファイルのリスト
-files = ['MPH.csv','PR.csv','4MMC.csv','4mar.csv','A.csv','Cocaine.csv','MA.csv']
+files = ['MPH.csv','PP.csv','4MMC.csv','4mar.csv','A.csv','Cocaine.csv','MA.csv']
 
 # 各ファイルからデータを読み込む
 dataframes = [pd.read_csv(file) for file in files]
 
-# 各データフレームからMPHのXLOGP値を抽出し、リストに追加
-xlogp_values = []
+# 各データフレームからMPHのXLOGP3値を抽出し、リストに追加
+XLOGP3_values = []
 for df in dataframes:
-    xlogp_values.extend(df[df['name'] == 'MPH']['XLOGP'].values)
+    XLOGP3_values.extend(df[df['name'] == 'MPH']['XLOGP3'].values)
 
 # データを正規化
-xlogp_values = (xlogp_values - np.mean(xlogp_values)) / np.std(xlogp_values)
+XLOGP3_values = (XLOGP3_values - np.mean(XLOGP3_values)) / np.std(XLOGP3_values)
 
 # ヒストグラムを描く
-plt.hist(xlogp_values, bins=30, density=True)
+plt.hist(XLOGP3_values, bins=30, density=True)
 
 # 正規分布のフィット
-mu, std = norm.fit(xlogp_values)
+mu, std = norm.fit(XLOGP3_values)
 xmin, xmax = plt.xlim()
 x = np.linspace(xmin, xmax, 100)
 p = norm.pdf(x, mu, std)

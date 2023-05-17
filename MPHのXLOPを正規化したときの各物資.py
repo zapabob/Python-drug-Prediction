@@ -12,7 +12,7 @@ dataframes = [pd.read_csv(file) for file in files]
 # 各データフレームからMPHのXLOGP3値を抽出し、リストに追加
 XLOGP3_values = []
 for df in dataframes:
-    XLOGP3_values.extend(df[df['name'] == 'MPH']['XLOGP3'].values)
+    XLOGP3_values.extend(df[df['NAME'] == 'MPH']['XLOGP3'].values)
 
 # データを正規化
 XLOGP3_values = (XLOGP3_values - np.mean(XLOGP3_values)) / np.std(XLOGP3_values)

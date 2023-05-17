@@ -1,7 +1,7 @@
 import pandas as pd
-import matplotlib.pyplot as plt
-from scipy.stats import norm
 import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import linregress
 
 # CSVファイルのリスト
 files = ['MPH.csv','PP.csv','4MMC.csv','4mar.csv','A.csv','Cocaine.csv','MA.csv']
@@ -9,23 +9,24 @@ files = ['MPH.csv','PP.csv','4MMC.csv','4mar.csv','A.csv','Cocaine.csv','MA.csv'
 # 各ファイルからデータを読み込む
 dataframes = [pd.read_csv(file) for file in files]
 
-# 各データフレームからMPHのXLOGP3値を抽出し、リストに追加
-XLOGP3_values = []
+# 各データフレームから 'LOGS' と 'XLOGP3' の値を抽出し、指数関数に適用
 for df in dataframes:
-    XLOGP3_values.extend(df[df['NAME'] == 'MPH']['XLOGP3'].values)
+    df['LOGS'] = np.exp(df['LOGS'])
+    df['XLOGP3'] = np.exp(df['XLOGP3'])
 
-# データを正規化
-XLOGP3_values = (XLOGP3_values - np.mean(XLOGP3_values)) / np.std(XLOGP3_values)
+# プロットの準備
+fig, ax = plt.subplots()
 
-# ヒストグラムを描く
-plt.hist(XLOGP3_values, bins=30, density=True)
+# 各データフレームに対して散布図をプロットし、回帰直線を描く
+for df in dataframes:
+    ax.scatter(df['XLOGP3'], df['LOGS'], alpha=0.5)
+    
+    # 回帰直線の計算と描画
+    slope, intercept, r_value, p_value, std_err = linregress(df['XLOGP3'], df['LOGS'])
+    ax.plot(df['XLOGP3'], intercept + slope*df['XLOGP3'], 'r', label=f'y={slope:.2f}x+{intercept:.2f}')
 
-# 正規分布のフィット
-mu, std = norm.fit(XLOGP3_values)
-xmin, xmax = plt.xlim()
-x = np.linspace(xmin, xmax, 100)
-p = norm.pdf(x, mu, std)
-plt.plot(x, p, 'k', linewidth=2)
-
-plt.title("Fit results: mu = %.2f,  std = %.2f" % (mu, std))
+# プロットの表示
+ax.set_xlabel('e^(XLOGP3)')
+ax.set_ylabel('e^(LOGS)')
+ax.legend()
 plt.show()

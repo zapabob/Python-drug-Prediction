@@ -18,9 +18,12 @@ df = pd.DataFrame(data)
 # Cleaning the data - Removing None values
 df = df.dropna()
 
+# Convert IC50 to pIC50
+df["DAT uptake inhibition pIC50"] = -np.log10(df["DAT uptake inhibition IC50 (nM)"] * 1e-9)
+
 # Split the Data
 X = df["DAT/SERT ratio"].values.reshape(-1,1)
-y = df["DAT uptake inhibition IC50 (nM)"].values
+y = df["DAT uptake inhibition pIC50"].values
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Model
@@ -31,14 +34,14 @@ model.fit(X_train, y_train)
 
 # GUI
 window = tk.Tk()
-window.title('DAT IC50 Predictor')
+window.title('DAT pIC50 Predictor')
 
 # Entry Field
 entry_field = tk.Entry(window)
 entry_field.pack()
 
-# Function to Predict DAT IC50
-def predict_dat_ic50():
+# Function to Predict DAT pIC50
+def predict_dat_pic50():
     iupac = entry_field.get()
     dat_sert_ratio = df.loc[df['Test drug'] == iupac, 'DAT/SERT ratio']
     if len(dat_sert_ratio) == 0:
@@ -49,7 +52,7 @@ def predict_dat_ic50():
     result_label.config(text=prediction)
 
 # Predict Button
-predict_button = tk.Button(window, text='Predict DAT IC50', command=predict_dat_ic50)
+predict_button = tk.Button(window, text='Predict DAT pIC50', command=predict_dat_pic50)
 predict_button.pack()
 
 # Result Label

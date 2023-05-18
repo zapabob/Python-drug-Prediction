@@ -5,19 +5,19 @@ import matplotlib.pyplot as plt
 import scipy.stats
 
 # ファイルのリスト
-files = ['MPH.csv','PR.csv','4MMC.csv','4mar.csv','A.csv','Cocaine.csv','MA.csv']
+files = ['MPH.csv','PP.csv','4MMC.csv','4mar.csv','A.csv','Cocaine.csv','MA.csv']
 
-# 各ファイルからデータを読み込み、MPHに対してCNS活性を正規化
+# 各ファイルからデータを読み込み、MPHに対してMW活性を正規化
 def process_files(files):
     data = []
     for file in files:
         if os.path.isfile(file):
             df = pd.read_csv(file)
-            if file == 'MPH.csv':
-                mph_cns = df['CNS']  # MPHのCNS活性値を取得
+            if file == '4mar.csv':
+                mph_MW = df['MW']  # 4marのMWを取得
             else:
-                df['Normalized CNS'] = df['CNS'] / mph_cns
-                data.append(df['Normalized CNS'])
+                df['Normalized MW'] = df['MW'] / mph_MW
+                data.append(df['Normalized MW'])
     return data
 
 # 全てのデータを一つのリストに結合

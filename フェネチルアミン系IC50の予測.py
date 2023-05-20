@@ -43,7 +43,7 @@ fingerprints = [AllChem.GetMorganFingerprintAsBitVect(mol, 2, nBits=1024) for mo
 fp_df = pd.DataFrame([list(fp) for fp in fingerprints])
 
 # Split the dataset into a training set and a test set
-fp_train, fp_test, ic50_train, ic50_test = train_test_split(fp_df, df["DA IC50"], test_size=0.2, random_state=42)
+fp_train, fp_test, ic50_train, ic50_test = train_test_split(fp_df, df["DA IC50"], test_size=0.2, random_state=50)
 
 # Train a model
 model = RandomForestRegressor()

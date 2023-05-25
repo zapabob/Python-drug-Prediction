@@ -24,7 +24,7 @@ def plot_and_save(t, C_mg_per_L):
     plt.plot(t, C_mg_per_L)
     plt.xlabel('Time (h)')
     plt.ylabel('Drug concentration (mg/L)')
-    plt.title('One-compartment model: concentration vs time')
+    plt.title('MDPCYP')
     plt.grid(True)
     # デスクトップに保存する
     plt.savefig(os.path.expanduser('~/Desktop/one_compartment_model.png'))

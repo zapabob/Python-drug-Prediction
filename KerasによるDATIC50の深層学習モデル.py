@@ -3,19 +3,26 @@ from rdkit import Chem
 from rdkit.Chem import Descriptors
 from rdkit.Chem import AllChem
 import numpy as np
-import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.layers import Dense
+import tkinter as tk
+from rdkit.Chem import MolFromSmiles, MolToSmiles
+import pandas as pd
 
 # ChEMBLデータベースからデータを取得
 target = new_client.target
 target_query = target.search('CHEMBL238')
-targets = target_query.all()
+targets = pd.DataFrame.from_dict(target_query)
+targets
 
+selected_target = targets.target_chembl_id
+selected_target
 activities = new_client.activity
-res = activities.filter(target_chembl_id=targets[0]['target_chembl_id']).filter(standard_type="IC50")
-
+res = activities.filter(target_chembl_id='CHEMBL238').filter(standard_type='IC50')
+res
+df = pd.DataFrame.from_dict(res)
+df
 # 分子記述子を計算
 def compute_descriptors(smiles):
     mol = Chem.MolFromSmiles(smiles)
@@ -29,7 +36,7 @@ def compute_descriptors(smiles):
 
     fp = AllChem.GetMorganFingerprintAsBitVect(mol, 2, nBits=1024)
     fp_arr = np.zeros((1,))
-    
+    AllChem.DataStructs.ConvertToNumpyArray(fp, fp_arr)
 
     descriptors = np.concatenate(([mol_weight, logp, num_h_donors, num_h_acceptors], fp_arr))
 
@@ -62,59 +69,50 @@ model = Sequential([
 model.compile(optimizer='adam', loss='mean_squared_error')
 
 # モデルの訓練
-model.fit(train_data, train_labels, epochs=1000, batch_size=3200, validation_split=0.2)
+model.fit(train_data, train_labels, epochs=300, batch_size=96, validation_split=0.2)
 
 # モデルの評価
 test_loss = model.evaluate(test_data, test_labels)
 print(f"Test loss: {test_loss}")
-import tkinter as tk
-from tkinter import messagebox
 
-def predict_ic50():
-    smiles = entry.get()
-    descriptors = compute_descriptors(smiles)
-    if descriptors is not None:
-        descriptors = np.array([descriptors])
-        prediction = model.predict(descriptors)
-        messagebox.showinfo("Prediction", f"The predicted IC50 value is {prediction[0][0]}")
-    else:
-        messagebox.showerror("Error", "Failed to compute descriptors for the given SMILES string.")
-
-import tkinter as tk
-from rdkit import Chem
-
-def predict_ic50():
-    # IUPAC名を取得
-    iupac_name = iupac_entry.get()
-
+# モデルの予測を行う関数
+def predict_ic50(iupac_name):
     # IUPAC名をSMILESに変換
-    mol = Chem.MolFromSmiles(iupac_name)
-    smiles = Chem.MolToSmiles(mol)
-
-    # SMILESから分子記述子を計算
+    smiles = MolToSmiles(MolFromSmiles(iupac_name))
+    # SMILESを分子記述子に変換
     descriptors = compute_descriptors(smiles)
+    # モデル```python
+    # モデルによる予測
+    predicted_ic50 = model.predict(np.array([descriptors]))
+    # IC50が1000を超える場合はN/Aを返す
+    if predicted_ic50 > 1000:
+        return "N/A"
+    else:
+        return predicted_ic50
 
-    # モデルを使用してIC50の値を予測
-    ic50 = model.predict(np.array([descriptors]))
-
-    # IC50の値を表示
-    result_label.config(text=f"Predicted IC50: {ic50[0][0]}")
-
-# GUIを作成
+# GUIの作成
 root = tk.Tk()
+root.title("IC50 Predictor")
 
-# IUPAC名を入力するためのテキストボックスを作成
+# 入力フィールド
 iupac_entry = tk.Entry(root)
 iupac_entry.pack()
 
-# IC50の値を予測するためのボタンを作成
-predict_button = tk.Button(root, text="Predict IC50", command=predict_ic50)
-predict_button.pack()
-
-# 予測結果を表示するためのラベルを作成
-result_label = tk.Label(root, text="")
+# 結果表示ラベル
+result_label = tk.Label(root)
 result_label.pack()
 
-# GUIを実行
-root.mainloop()
+# ボタンが押されたときの処理
+def on_button_press():
+    predicted_ic50 = iupac_entry.get()
+    try:
+        predicted_ic50 = model.predict(np.array([descriptors]))
+        result_label.config(text=f"Predicted IC50: {predicted_ic50}")
+    except Exception as e:
+        result_label.config(text=f"Error: {str(e)}")
 
+# ボタン
+predict_button = tk.Button(root, text="Predict IC50", command=on_button_press)
+predict_button.pack()
+
+root.mainloop()

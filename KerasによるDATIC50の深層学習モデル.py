@@ -69,7 +69,7 @@ model = Sequential([
 model.compile(optimizer='adam', loss='mean_squared_error')
 
 # モデルの訓練
-model.fit(train_data, train_labels, epochs=300, batch_size=96, validation_split=0.2)
+model.fit(train_data, train_labels, epochs=250, batch_size=64, validation_split=0.2)
 
 # モデルの評価
 test_loss = model.evaluate(test_data, test_labels)
@@ -85,7 +85,7 @@ def predict_ic50(iupac_name):
     # モデルによる予測
     predicted_ic50 = model.predict(np.array([descriptors]))
     # IC50が1000を超える場合はN/Aを返す
-    if predicted_ic50 > 1000:
+    if predicted_ic50 > -np.log10(1000):
         return "N/A"
     else:
         return predicted_ic50
@@ -106,13 +106,13 @@ result_label.pack()
 def on_button_press():
     predicted_ic50 = iupac_entry.get()
     try:
-        predicted_ic50 = model.predict(np.array([descriptors]))
-        result_label.config(text=f"Predicted IC50: {predicted_ic50}")
+        predicted_ic50 =-np.log10( model.predict(np.array([descriptors])))
+        result_label.config(text=f"Predicted -pIC50: {predicted_ic50}")
     except Exception as e:
         result_label.config(text=f"Error: {str(e)}")
 
 # ボタン
-predict_button = tk.Button(root, text="Predict IC50", command=on_button_press)
+predict_button = tk.Button(root, text="Predict -pIC50", command=on_button_press)
 predict_button.pack()
 
 root.mainloop()

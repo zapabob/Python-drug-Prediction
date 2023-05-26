@@ -1,35 +1,47 @@
+import os
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt  # <- "matplotlib.pyplot"をインポート
+import matplotlib.pyplot as plt
 import scipy.stats
 
-# CSVファイルのリスト
-files = ['MPH.csv','PR.csv','4MMC.csv','4mar.csv','A.csv','Cocaine.csv','MA.csv']
+# ファイルのリスト
+files = ['MPH.csv','PP.csv','4MMC.csv','4mar.csv','A.csv','Cocaine.csv','MA.csv']
 
-# 各ファイルからデータを読み込み、MPHに対してCNS活性を正規化
-data = []
-for file in files:
-    df = pd.read_csv(file)
-    if file == 'MPH.csv':
-        mph_cns = df['CNS']  # MPHのCNS活性値を取得
-    else:
-        df['Normalized CNS'] = df['CNS'] / mph_cns  # <- CNSを文字列として指定
-        data.append(df['Normalized CNS'])
+# 各ファイルからデータを読み込み、MPHに対してMW活性を正規化
+def process_files(files):
+    data = []
+    for file in files:
+        if os.path.isfile(file):
+            df = pd.read_csv(file)
+            if file == '4mar.csv':
+                mph_MW = df['MW']  # 4marのMWを取得
+            else:
+                df['Normalized MW'] = df['MW'] / mph_MW
+                data.append(df['Normalized MW'])
+    return data
 
 # 全てのデータを一つのリストに結合
-all_data = np.concatenate(data)
+def combine_data(data):
+    return np.concatenate(data)
 
-# ヒストグラムを描く
-plt.hist(all_data, bins=30, density=True, alpha=0.6, color='g')  # <- "plt.hist"を使用
+# ヒストグラムを描き、正規分布をフィット
+def plot_distribution(all_data):
+    plt.hist(all_data, bins=30, density=True, alpha=0.6, color='g')
 
-# 正規分布のフィット
-mu, std = scipy.stats.norm.fit(all_data)
-xmin, xmax = plt.xlim()  # <- "plt.xlim"を使用
-x = np.linspace(xmin, xmax, 100)
-p = scipy.stats.norm.pdf(x, mu, std)
-plt.plot(x, p, 'k', linewidth=2)  # <- "linewidth"を使用
+    mu, std = scipy.stats.norm.fit(all_data)
+    xmin, xmax = plt.xlim()
+    x = np.linspace(xmin, xmax, 100)
+    p = scipy.stats.norm.pdf(x, mu, std)
+    plt.plot(x, p, 'k', linewidth=2)
 
-# タイトルを設定して描画
-title = "Fit results: mu = %.2f,  std = %.2f" % (mu, std)
-plt.title(title)
-plt.show()
+    title = "Fit results: mu = %.2f,  std = %.2f" % (mu, std)
+    plt.title(title)
+    plt.show()
+
+def main():
+    data = process_files(files)
+    all_data = combine_data(data)
+    plot_distribution(all_data)
+
+if __name__ == "__main__":
+    main()

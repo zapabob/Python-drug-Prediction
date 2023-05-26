@@ -13,7 +13,7 @@ normalized_dfs = [df / MPH_df * 100 for df in dataframes]
 
 # CNS活性のデータを取得 (ここでは仮に'CNS_activity'というカラム名を使用)
 # カラム名は各データセットに合わせて変更してください
-CNS_activity_data = [df['CNS_activity'] for df in normalized_dfs]
+CNS_activity_data = [df['XLOGP3'] for df in normalized_dfs]
 
 # データを結合
 combined_data = np.concatenate(CNS_activity_data)

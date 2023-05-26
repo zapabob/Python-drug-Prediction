@@ -69,7 +69,7 @@ model = Sequential([
 model.compile(optimizer='adam', loss='mean_squared_error')
 
 # モデルの訓練
-model.fit(train_data, train_labels, epochs=100, batch_size=32, validation_split=0.2)
+model.fit(train_data, train_labels, epochs=250, batch_size=64, validation_split=0.2)
 
 # モデルの評価
 test_loss = model.evaluate(test_data, test_labels)
@@ -85,7 +85,7 @@ def predict_ic50(iupac_name):
     # モデルによる予測
     predicted_ic50 = model.predict(np.array([descriptors]))
     # IC50が1000を超える場合はN/Aを返す
-    if predicted_ic50 > 1000:
+    if predicted_ic50 > -np.log10(1000):
         return "N/A"
     else:
         return predicted_ic50

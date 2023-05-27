@@ -116,8 +116,4 @@ def on_button_press():
 predict_button = tk.Button(root, text="Predict -pIC50", command=on_button_press)
 predict_button.pack()
 
-predict_button= pyperclip.paste()
-pyperclip.copy("Predict -pIC50")
-print("Predict -pIC50")
-# text to be copied
 root.mainloop()

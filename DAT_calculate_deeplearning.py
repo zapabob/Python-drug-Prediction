@@ -1,4 +1,5 @@
 from chembl_webresource_client.new_client import new_client
+import pyperclip
 from rdkit import Chem
 from rdkit.Chem import Descriptors
 from rdkit.Chem import AllChem
@@ -9,7 +10,7 @@ from keras.layers import Dense
 import tkinter as tk
 from rdkit.Chem import MolFromSmiles, MolToSmiles
 import pandas as pd
-
+import pyperclip
 # ChEMBLデータベースからデータを取得
 target = new_client.target
 target_query = target.search('CHEMBL238')
@@ -85,7 +86,7 @@ def predict_ic50(iupac_name):
     # モデルによる予測
     predicted_ic50 = model.predict(np.array([descriptors]))
     # IC50が1000を超える場合はN/Aを返す
-    if predicted_ic50 > -np.log10(1000):
+    if predicted_ic50 > -np.log10(1000000):
         return "N/A"
     else:
         return predicted_ic50
@@ -106,7 +107,7 @@ result_label.pack()
 def on_button_press():
     predicted_ic50 = iupac_entry.get()
     try:
-        predicted_ic50 =-np.log10( model.predict(np.array([descriptors])))
+        predicted_ic50 =-np.log10(model.predict(np.array([descriptors])))
         result_label.config(text=f"Predicted -pIC50: {predicted_ic50}")
     except Exception as e:
         result_label.config(text=f"Error: {str(e)}")

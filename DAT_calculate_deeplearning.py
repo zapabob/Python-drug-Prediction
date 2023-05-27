@@ -86,7 +86,7 @@ def predict_ic50(iupac_name):
     # モデルによる予測
     predicted_ic50 = model.predict(np.array([descriptors]))
     # IC50が1000を超える場合はN/Aを返す
-    if predicted_ic50 > -np.log10(1000000):
+    if predicted_ic50 > -np.log10(1000000000000):
         return "N/A"
     else:
         return predicted_ic50

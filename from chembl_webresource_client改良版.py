@@ -67,7 +67,7 @@ model = Sequential([
 model.compile(optimizer='adam', loss='mean_squared_error')
 
 # モデルの訓練
-model.fit(train_data, train_labels, epochs=10000, batch_size=512, validation_split=0.2)
+model.fit(train_data, train_labels, epochs=100, batch_size=32, validation_split=0.2)
 
 # モデルの評価
 test_loss = model.evaluate(test_data, test_labels)

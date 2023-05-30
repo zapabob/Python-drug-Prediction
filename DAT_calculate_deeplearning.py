@@ -3,12 +3,14 @@ from rdkit import Chem
 from rdkit.Chem import Descriptors
 from rdkit.Chem import AllChem
 import numpy as np
+from sklearn.metrics import PredictionErrorDisplay, r2_score
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.layers import Dense
 import tkinter as tk
 from rdkit.Chem import MolFromSmiles, MolToSmiles
 import pandas as pd
+
 # ChEMBLデータベースからデータを取得
 target = new_client.target
 target_query = target.search('CHEMBL238')
@@ -73,18 +75,26 @@ model.fit(train_data, train_labels, epochs=250, batch_size=64, validation_split=
 # モデルの評価
 test_loss = model.evaluate(test_data, test_labels)
 print(f"Test loss: {test_loss}")
+# R^2スコアを計算
+r2 = r2_score(test_labels, PredictionErrorDisplay)
+
+print(f"R^2 score: {r2}")
+
+
+
 
 # モデルの予測を行う関数
 def predict_ic50(iupac_name):
     # IUPAC名をSMILESに変換
+    iupac_name = MolFromSmiles(iupac_name)
     smiles = MolToSmiles(MolFromSmiles(iupac_name))
     # SMILESを分子記述子に変換
     descriptors = compute_descriptors(smiles)
     # モデル```python
     # モデルによる予測
     predicted_ic50 = model.predict(np.array([descriptors]))
-    # IC50が1000を超える場合はN/Aを返す
-    if predicted_ic50 > -np.log10(10):
+    # IC50が1000nMを超える場合はN/Aを返す
+    if predicted_ic50 > -np.log10(1.0*10^-9):
         return "N/A"
     else:
         return predicted_ic50

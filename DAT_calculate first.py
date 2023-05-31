@@ -9,18 +9,19 @@ from keras.layers import Dense
 import tkinter as tk
 from rdkit.Chem import MolFromSmiles, MolToSmiles
 import pandas as pd
-from sklearn.metrics import r2_score
 # ChEMBLデータベースからデータを取得
 target = new_client.target
 target_query = target.search('CHEMBL238')
 targets = pd.DataFrame.from_dict(target_query)
+targets
 
-selected_target = targets.target_chembl_id[0]
+selected_target = targets.target_chembl_id
+selected_target
 activities = new_client.activity
-res = activities.filter(target_chembl_id=selected_target).filter(standard_type='IC50')
-
+res = activities.filter(target_chembl_id='CHEMBL238').filter(standard_type='IC50')
+res
 df = pd.DataFrame.from_dict(res)
-
+df
 # 分子記述子を計算
 def compute_descriptors(smiles):
     mol = Chem.MolFromSmiles(smiles)
@@ -43,7 +44,7 @@ def compute_descriptors(smiles):
 # データの準備
 data = []
 labels = []
-for _, act in df.iterrows():
+for act in res:
     if act['standard_value'] is not None and act['canonical_smiles'] is not None:
         descriptors = compute_descriptors(act['canonical_smiles'])
         if descriptors is not None:
@@ -67,52 +68,49 @@ model = Sequential([
 model.compile(optimizer='adam', loss='mean_squared_error')
 
 # モデルの訓練
-model.fit(train_data, train_labels, epochs=1000, batch_size=32, validation_split=0.2)
+model.fit(train_data, train_labels, epochs=250, batch_size=64, validation_split=0.2)
 
 # モデルの評価
 test_loss = model.evaluate(test_data, test_labels)
 print(f"Test loss: {test_loss}")
 
-
-
-
 # モデルの予測を行う関数
-def predict_ic50(smiles):
+def predict_ic50(iupac_name):
+    # IUPAC名をSMILESに変換
+    smiles = MolToSmiles(MolFromSmiles(iupac_name))
     # SMILESを分子記述子に変換
     descriptors = compute_descriptors(smiles)
+    # モデル```python
     # モデルによる予測
     predicted_ic50 = model.predict(np.array([descriptors]))
-    # IC50の予測値を-pIC50として返す
-    return -np.log10(predicted_ic50)
+    # IC50が1000を超える場合はN/Aを返す
+    if predicted_ic50 > -np.log10(1000*10e-9):
+        return "N/A"
+    else:
+        return predicted_ic50
 
-# ボタンが押されたときの処理
-def on_button_press():
-    smiles = iupac_entry.get()
-    try:
-        predicted_ic50 = predict_ic50(smiles)
-        result_label.config(text=f"Predicted -pIC50: {predicted_ic50}")
-    except Exception as e:
-        result_label.config(text=f"Error: {str(e)}")
-# モデルの予測を取得
-predictions = model.predict(test_data)
-
-# R^2スコアを計算
-r2 = r2_score(test_labels, predictions)
-
-print(f"R^2 score: {r2}")
-
-    # GUIの作成
+# GUIの作成
 root = tk.Tk()
 root.title("IC50 Predictor")
 
-    # 入力フィールド
+# 入力フィールド
 iupac_entry = tk.Entry(root)
 iupac_entry.pack()
 
-    # 結果表示ラベル
+# 結果表示ラベル
 result_label = tk.Label(root)
 result_label.pack()
-    # ボタン
+
+# ボタンが押されたときの処理
+def on_button_press():
+    predicted_ic50 = iupac_entry.get()
+    try:
+        predicted_ic50 =-np.log10(model.predict(np.array([descriptors])))
+        result_label.config(text=f"Predicted -pIC50: {predicted_ic50}")
+    except Exception as e:
+        result_label.config(text=f"Error: {str(e)}")
+
+# ボタン
 predict_button = tk.Button(root, text="Predict -pIC50", command=on_button_press)
 predict_button.pack()
 

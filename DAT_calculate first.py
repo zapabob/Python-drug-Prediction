@@ -113,5 +113,15 @@ def on_button_press():
 # ボタン
 predict_button = tk.Button(root, text="Predict -pIC50", command=on_button_press)
 predict_button.pack()
+# リセットボタンが押されたときの処理
+def on_reset_button_press():
+    # 入力フィールドをクリア
+    iupac_entry.delete(0, 'end')
+    # 結果表示ラベルをクリア
+    result_label.config(text="")
+
+# リセットボタン
+reset_button = tk.Button(root, text="Reset", command=on_reset_button_press)
+reset_button.pack()
 
 root.mainloop()

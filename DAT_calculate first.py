@@ -3,14 +3,12 @@ from rdkit import Chem
 from rdkit.Chem import Descriptors
 from rdkit.Chem import AllChem
 import numpy as np
-from sklearn.metrics import PredictionErrorDisplay, r2_score
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.layers import Dense
 import tkinter as tk
 from rdkit.Chem import MolFromSmiles, MolToSmiles
 import pandas as pd
-
 # ChEMBLデータベースからデータを取得
 target = new_client.target
 target_query = target.search('CHEMBL238')
@@ -70,31 +68,23 @@ model = Sequential([
 model.compile(optimizer='adam', loss='mean_squared_error')
 
 # モデルの訓練
-model.fit(train_data, train_labels, epochs=250, batch_size=64, validation_split=0.2)
+model.fit(train_data, train_labels, epochs=100, batch_size=64, validation_split=0.2)
 
 # モデルの評価
 test_loss = model.evaluate(test_data, test_labels)
 print(f"Test loss: {test_loss}")
-# R^2スコアを計算
-r2 = r2_score(test_labels, PredictionErrorDisplay)
-
-print(f"R^2 score: {r2}")
-
-
-
 
 # モデルの予測を行う関数
 def predict_ic50(iupac_name):
     # IUPAC名をSMILESに変換
-    iupac_name = MolFromSmiles(iupac_name)
     smiles = MolToSmiles(MolFromSmiles(iupac_name))
     # SMILESを分子記述子に変換
     descriptors = compute_descriptors(smiles)
     # モデル```python
     # モデルによる予測
     predicted_ic50 = model.predict(np.array([descriptors]))
-    # IC50が1000nMを超える場合はN/Aを返す
-    if predicted_ic50 > -np.log10(1.0*10^-9):
+    # IC50が1000を超える場合はN/Aを返す
+    if predicted_ic50 >  np.log10(1.0*10^(-9)):
         return "N/A"
     else:
         return predicted_ic50
@@ -115,13 +105,23 @@ result_label.pack()
 def on_button_press():
     predicted_ic50 = iupac_entry.get()
     try:
-        predicted_ic50 =-np.log10(model.predict(np.array([descriptors])))
-        result_label.config(text=f"Predicted -pIC50: {predicted_ic50}")
+        predicted_ic50 =np.log10(model.predict(np.array([descriptors])))
+        result_label.config(text=f"Predicted pIC50: {predicted_ic50}")
     except Exception as e:
         result_label.config(text=f"Error: {str(e)}")
 
 # ボタン
-predict_button = tk.Button(root, text="Predict -pIC50", command=on_button_press)
+predict_button = tk.Button(root, text="Predict pIC50", command=on_button_press)
 predict_button.pack()
+# リセットボタンが押されたときの処理
+def on_reset_button_press():
+    # 入力フィールドをクリア
+    iupac_entry.delete(0, 'end')
+    # 結果表示ラベルをクリア
+    result_label.config(text="")
+
+# リセットボタン
+reset_button = tk.Button(root, text="Reset", command=on_reset_button_press)
+reset_button.pack()
 
 root.mainloop()

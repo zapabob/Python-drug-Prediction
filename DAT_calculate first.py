@@ -68,30 +68,57 @@ model = Sequential([
 model.compile(optimizer='adam', loss='mean_squared_error')
 
 # モデルの訓練
-model.fit(train_data, train_labels, epochs=100, batch_size=64, validation_split=0.2)
+model.fit(train_data, train_labels, epochs=75, batch_size=64, validation_split=0.2)
 
 # モデルの評価
 test_loss = model.evaluate(test_data, test_labels)
 print(f"Test loss: {test_loss}")
 
 # モデルの予測を行う関数
+# モデルの予測を行う関数
 def predict_ic50(iupac_name):
     # IUPAC名をSMILESに変換
     smiles = MolToSmiles(MolFromSmiles(iupac_name))
     # SMILESを分子記述子に変換
     descriptors = compute_descriptors(smiles)
-    # モデル```python
     # モデルによる予測
     predicted_ic50 = model.predict(np.array([descriptors]))
     # IC50が1000を超える場合はN/Aを返す
-    if predicted_ic50 >  np.log10(1.0*10^(-9)):
-        return "N/A"
+    if predicted_ic50 < 3.000:
+        return "N/A" # IC50 >1000
     else:
-        return predicted_ic50
+        return -np.log10(predicted_ic50)
 
 # GUIの作成
 root = tk.Tk()
 root.title("IC50 Predictor")
+
+
+entry = tk.Entry(root)
+entry.pack()
+
+
+def reset():
+    entry.delete(0, 'end')
+
+reset_button = tk.Button(root, text="Reset", command=reset)
+reset_button.pack()
+
+
+
+def copy():
+    root.clipboard_clear()
+    root.clipboard_append(entry.get())
+
+def paste():
+    entry.insert(0, root.clipboard_get())
+
+copy_button = tk.Button(root, text="Copy", command=copy)
+copy_button.pack()
+
+paste_button = tk.Button(root, text="Paste", command=paste)
+paste_button.pack()
+
 
 # 入力フィールド
 iupac_entry = tk.Entry(root)
@@ -113,15 +140,5 @@ def on_button_press():
 # ボタン
 predict_button = tk.Button(root, text="Predict pIC50", command=on_button_press)
 predict_button.pack()
-# リセットボタンが押されたときの処理
-def on_reset_button_press():
-    # 入力フィールドをクリア
-    iupac_entry.delete(0, 'end')
-    # 結果表示ラベルをクリア
-    result_label.config(text="")
-
-# リセットボタン
-reset_button = tk.Button(root, text="Reset", command=on_reset_button_press)
-reset_button.pack()
 
 root.mainloop()

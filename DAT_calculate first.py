@@ -68,7 +68,7 @@ model = Sequential([
 model.compile(optimizer='adam', loss='mean_squared_error')
 
 # モデルの訓練
-model.fit(train_data, train_labels, epochs=75, batch_size=64, validation_split=0.2)
+model.fit(train_data, train_labels, epochs=250, batch_size=100, validation_split=0.2)
 
 # モデルの評価
 test_loss = model.evaluate(test_data, test_labels)
@@ -88,7 +88,7 @@ def predict_ic50(iupac_name):
         return "N/A" # IC50 >1000
     else:
         return -np.log10(predicted_ic50)
-
+model.save('deeplearning.h5')
 # GUIの作成
 root = tk.Tk()
 root.title("IC50 Predictor")
@@ -100,6 +100,7 @@ entry.pack()
 
 def reset():
     entry.delete(0, 'end')
+    result_label.config(text="")
 
 reset_button = tk.Button(root, text="Reset", command=reset)
 reset_button.pack()

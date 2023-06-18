@@ -9,6 +9,7 @@ from keras.layers import Dense
 import tkinter as tk
 from rdkit.Chem import MolFromSmiles, MolToSmiles
 import pandas as pd
+
 # ChEMBLデータベースからデータを取得
 target = new_client.target
 target_query = target.search('CHEMBL238')
@@ -55,26 +56,34 @@ data = np.array(data)
 labels = np.array(labels)
 
 # データの分割
-train_data, test_data, train_labels, test_labels = train_test_split(data, labels, test_size=0.2, random_state=42)
+train_data, test_data, train_labels, test_labels = train_test_split(data, labels, test_size=0.2, random_state=128)
+
+# モデルの構築
+from keras.layers import Dropout
 
 # モデルの構築
 model = Sequential([
     Dense(1024, activation='relu', input_shape=(train_data.shape[1],)),
+    Dropout(0.5),
     Dense(512, activation='relu'),
+    Dropout(0.5),
     Dense(1)
 ])
+
 
 # モデルのコンパイル
 model.compile(optimizer='adam', loss='mean_squared_error')
 
 # モデルの訓練
-model.fit(train_data, train_labels, epochs=250, batch_size=100, validation_split=0.2)
+model.fit(train_data, train_labels, epochs=250, batch_size=64, validation_split=0.2)
 
 # モデルの評価
 test_loss = model.evaluate(test_data, test_labels)
 print(f"Test loss: {test_loss}")
+# モデルの予測
+test_predictions = model.predict(test_data)
 
-# モデルの予測を行う関数
+
 # モデルの予測を行う関数
 def predict_ic50(iupac_name):
     # IUPAC名をSMILESに変換
@@ -99,8 +108,13 @@ entry.pack()
 
 
 def reset():
+    # clear any stateful parts of the application
     entry.delete(0, 'end')
     result_label.config(text="")
+    # clear the input field
+    iupac_entry.delete(0, 'end')
+    # you might also need to reset your model or any other stateful parts of your application here
+
 
 reset_button = tk.Button(root, text="Reset", command=reset)
 reset_button.pack()
@@ -131,10 +145,10 @@ result_label.pack()
 
 # ボタンが押されたときの処理
 def on_button_press():
-    predicted_ic50 = iupac_entry.get()
+    iupac_name = iupac_entry.get()
     try:
-        predicted_ic50 =np.log10(model.predict(np.array([descriptors])))
-        result_label.config(text=f"Predicted pIC50: {predicted_ic50}")
+        predicted_ic50 = -predict_ic50(iupac_name)
+        result_label.config(text=f"Predicted IC50: {predicted_ic50}")
     except Exception as e:
         result_label.config(text=f"Error: {str(e)}")
 

@@ -97,18 +97,80 @@ def predict_ic50(iupac_name):
         return "N/A" # IC50 >1000
     else:
         return -np.log10(predicted_ic50)
-model.save('deeplearning.h5')
+
+from rdkit import Chem
+from rdkit.Chem import Descriptors
+import matplotlib.pyplot as plt
+
 compounds = {
     "Cocaine": 'CN1[C@H]2CC[C@@H]1[C@H]([C@H](C2)OC(=O)C3=CC=CC=C3)C(=O)OC',
-    "Methamphetamine": 'CC(C)NC(C)C',
+    "Methamphetamine": 'CNC(C)Cc1ccccc1',
     "MDPV": 'O=C(C(CCC)N1CCCC1)C2=CC=C3C(OCO3)=C2',
     "GBR 12909":'Fc1ccc(cc1)C(OCCN2CCN(CC2)CCCc3ccccc3)c4ccc(F)cc4',
     "a-PHP":'C1(=CC=CC=C1)C(C(CCCC)N2CCCC2)=O',
+    "a-PVP":'CCCC(C(C1=CC=CC=C1)=O)N2CCCC2',
+    "4-mar":'CC1C(C2=CC=CC=C2)OC(N)=N1',
+    "4Br4MAR":'Brc1ccc(cc1)C1OC(N)=NC1C',
+    "4.4DMAR":'CC(N=C(N)O1)C1C2=CC=C(C)C=C2',
+    "MPH":'COC(=O)C(c1ccccc1)C1CCCCN1',
+    "MDMA":'CC(NC)CC1=CC=C(OCO2)C2=C1',
+    "AMP":'C[C@@H](Cc1ccccc1)N',
 }
 
+logP_values = []
+predicted_pic50_values = []
+
 for name, smiles in compounds.items():
-    predicted_pic50 = predict_ic50(smiles)
-    print(f"Predicted pIC50 for {name}:{abs(predicted_pic50)}")
+    mol = Chem.MolFromSmiles(smiles)
+    logP = Descriptors.MolLogP(mol)
+    predicted_pic50 = abs(predict_ic50(smiles))
+    
+    logP_values.append(logP)
+    predicted_pic50_values.append(predicted_pic50)
+    
+    print(f"LogP and predicted pIC50 for {name}: {logP}, {predicted_pic50}")
+
+# Plotting
+plt.figure(figsize=(10, 6))
+plt.scatter(logP_values, predicted_pic50_values)
+for i, txt in enumerate(compounds.keys()):
+    plt.annotate(txt, (logP_values[i], predicted_pic50_values[i]))
+plt.xlabel('LogP')
+plt.ylabel('Predicted pIC50')
+plt.title('Scatter plot of predicted pIC50 against LogP')
+plt.show()
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
+import numpy as np
+
+# Convert the lists to numpy arrays and reshape them
+logP_values_np = np.array(logP_values).reshape(-1, 1)
+predicted_pic50_values_np = np.array(predicted_pic50_values).reshape(-1, 1)
+
+# Fit the linear regression model
+model = LinearRegression()
+model.fit(logP_values_np, predicted_pic50_values_np)
+
+# Predict the pIC50 values
+predicted_pic50_values_pred = model.predict(logP_values_np)
+
+# Compute the R^2 score
+r2 = r2_score(predicted_pic50_values_np, predicted_pic50_values_pred)
+
+# Plotting
+plt.figure(figsize=(10, 6))
+plt.scatter(logP_values, predicted_pic50_values)
+plt.plot(logP_values, predicted_pic50_values_pred, color='red')  # Add the regression line
+for i, txt in enumerate(compounds.keys()):
+    plt.annotate(txt, (logP_values[i], predicted_pic50_values[i]))
+plt.xlabel('LogP')
+plt.ylabel('Predicted pIC50')
+plt.title(f'Scatter plot of predicted pIC50 against LogP with regression line (R^2 = {r2:.2f})')
+plt.show()
+
+# Print the equation of the line
+print(f"Equation of the line: pIC50 = {model.intercept_[0]:.2f} + {model.coef_[0][0]:.2f} * LogP")
+
 
 # GUIの作成
 root = tk.Tk()

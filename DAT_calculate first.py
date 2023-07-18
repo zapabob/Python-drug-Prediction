@@ -56,7 +56,7 @@ data = np.array(data)
 labels = np.array(labels)
 
 # データの分割
-train_data, test_data, train_labels, test_labels = train_test_split(data, labels, test_size=0.2, random_state=128)
+train_data, test_data, train_labels, test_labels = train_test_split(data, labels, test_size=0.2, random_state=64)
 
 # モデルの構築
 from keras.layers import Dropout
@@ -75,7 +75,7 @@ model = Sequential([
 model.compile(optimizer='adam', loss='mean_squared_error')
 
 # モデルの訓練
-model.fit(train_data, train_labels, epochs=250, batch_size=64, validation_split=0.2)
+model.fit(train_data, train_labels, epochs=25, batch_size=64, validation_split=0.2)
 
 # モデルの評価
 test_loss = model.evaluate(test_data, test_labels)
@@ -93,11 +93,23 @@ def predict_ic50(iupac_name):
     # モデルによる予測
     predicted_ic50 = model.predict(np.array([descriptors]))
     # IC50が1000を超える場合はN/Aを返す
-    if predicted_ic50 < 3.000:
+    if predicted_ic50 > np.log10(10^-3):
         return "N/A" # IC50 >1000
     else:
         return -np.log10(predicted_ic50)
 model.save('deeplearning.h5')
+compounds = {
+    "Cocaine": 'CN1[C@H]2CC[C@@H]1[C@H]([C@H](C2)OC(=O)C3=CC=CC=C3)C(=O)OC',
+    "Methamphetamine": 'CC(C)NC(C)C',
+    "MDPV": 'O=C(C(CCC)N1CCCC1)C2=CC=C3C(OCO3)=C2',
+    "GBR 12909":'Fc1ccc(cc1)C(OCCN2CCN(CC2)CCCc3ccccc3)c4ccc(F)cc4',
+    "a-PHP":'C1(=CC=CC=C1)C(C(CCCC)N2CCCC2)=O',
+}
+
+for name, smiles in compounds.items():
+    predicted_pic50 = predict_ic50(smiles)
+    print(f"Predicted pIC50 for {name}:{abs(predicted_pic50)}")
+
 # GUIの作成
 root = tk.Tk()
 root.title("IC50 Predictor")

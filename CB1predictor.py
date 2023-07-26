@@ -110,7 +110,7 @@ for i, (name, smiles) in enumerate(compounds.items()):
 plt.xlabel('LogP')
 plt.ylabel('Predicted Ki')
 plt.title('Scatter plot of predicted Ki against LogP')
-plt.yscale('symlog')  # 縦軸を対数スケールに設定
+plt.yscale('log')  # 縦軸を対数スケールに設定
 plt.tight_layout()
 plt.show()
 root = tk.Tk()

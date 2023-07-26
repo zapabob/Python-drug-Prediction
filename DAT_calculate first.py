@@ -3,6 +3,8 @@ from rdkit import Chem
 from rdkit.Chem import Descriptors
 from rdkit.Chem import AllChem
 import numpy as np
+from sklearn.base import r2_score
+from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.layers import Dense
@@ -34,7 +36,7 @@ def compute_descriptors(smiles):
     num_h_donors = Descriptors.NumHDonors(mol)
     num_h_acceptors = Descriptors.NumHAcceptors(mol)
 
-    fp = AllChem.GetMorganFingerprintAsBitVect(mol, 2, nBits=204)
+    fp = AllChem.GetMorganFingerprintAsBitVect(mol, 2, nBits=2048)
     fp_arr = np.zeros((1,))
     AllChem.DataStructs.ConvertToNumpyArray(fp, fp_arr)
 
@@ -93,7 +95,7 @@ def predict_ic50(iupac_name):
     # モデルによる予測
     predicted_ic50 = model.predict(np.array([descriptors]))
     # IC50が1000を超える場合はN/Aを返す
-    if predicted_ic50 > np.log10(10^-3):
+    if predicted_ic50 > np.log10(1.0*10^-3):
         return "N/A" # IC50 >1000
     else:
         return -np.log10(predicted_ic50)
@@ -118,61 +120,49 @@ compounds = {
     "pemoline":'C1=CC=C(C=C1)C2C(=O)N=C(O2)N',
     "dopamine":'NCCc1ccc(O)c(O)c1',
 }
+# ... [全ての前のコード]
 
-logP_values = []
+# 分子量と予測pIC50のリストを計算
+mol_weights = []
 predicted_pic50_values = []
 
 for name, smiles in compounds.items():
     mol = Chem.MolFromSmiles(smiles)
-    logP = Descriptors.MolLogP(mol)
-    predicted_pic50 = abs(predict_ic50(smiles))
+    mol_weight = Descriptors.MolWt(mol)
+    predicted_pic50 = predict_ic50(smiles)
     
-    logP_values.append(logP)
+    mol_weights.append(mol_weight)
     predicted_pic50_values.append(predicted_pic50)
     
-    print(f"LogP and predicted pIC50 for {name}: {logP}, {predicted_pic50}")
+    print(f"Molecular weight and predicted pIC50 for {name}: {mol_weight}, {predicted_pic50}")
 
-# Plotting
-plt.figure(figsize=(10, 6))
-plt.scatter(logP_values, predicted_pic50_values)
-for i, txt in enumerate(compounds.keys()):
-    plt.annotate(txt, (logP_values[i], predicted_pic50_values[i]))
-plt.xlabel('LogP')
-plt.ylabel('Predicted pIC50')
-plt.title('Scatter plot of predicted pIC50 against LogP')
-plt.show()
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import r2_score
-import numpy as np
-
-# Convert the lists to numpy arrays and reshape them
-logP_values_np = np.array(logP_values).reshape(-1, 1)
+# 線形回帰モデルを適合
+mol_weights_np = np.array(mol_weights).reshape(-1, 1)
 predicted_pic50_values_np = np.array(predicted_pic50_values).reshape(-1, 1)
 
-# Fit the linear regression model
 model = LinearRegression()
-model.fit(logP_values_np, predicted_pic50_values_np)
+model.fit(mol_weights_np, predicted_pic50_values_np)
+predicted_pic50_values_pred = model.predict(mol_weights_np)
 
-# Predict the pIC50 values
-predicted_pic50_values_pred = model.predict(logP_values_np)
-
-# Compute the R^2 score
+# R^2値を計算
 r2 = r2_score(predicted_pic50_values_np, predicted_pic50_values_pred)
 
-# Plotting
+# 散布図を描画
 plt.figure(figsize=(10, 6))
-plt.scatter(logP_values, predicted_pic50_values)
-plt.plot(logP_values, predicted_pic50_values_pred, color='red')  # Add the regression line
+plt.scatter(mol_weights, predicted_pic50_values, label="Data points")
+plt.plot(mol_weights, predicted_pic50_values_pred, color='red', label="Regression line")  # regression line
 for i, txt in enumerate(compounds.keys()):
-    plt.annotate(txt, (logP_values[i], predicted_pic50_values[i]))
-plt.xlabel('LogP')
+    plt.annotate(txt, (mol_weights[i], predicted_pic50_values[i]))
+plt.xlabel('Molecular Weight')
 plt.ylabel('Predicted pIC50')
-plt.title(f'Scatter plot of predicted pIC50 against LogP with regression line (R^2 = {r2:.2f})')
+plt.title(f'Scatter plot of predicted pIC50 against Molecular Weight with regression line (R^2 = {r2:.2f})')
+plt.legend()
 plt.show()
 
-# Print the equation of the line
-print(f"Equation of the line: pIC50 = {model.intercept_[0]:.2f} + {model.coef_[0][0]:.2f} * LogP")
+# 回帰直線の式を出力
+print(f"Equation of the line: pIC50 = {model.intercept_[0]:.2f} + {model.coef_[0][0]:.2f} * Molecular Weight")
 
+# ... [GUIのコードなど、残りのコード]
 
 # GUIの作成
 root = tk.Tk()

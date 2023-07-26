@@ -34,7 +34,7 @@ def compute_descriptors(smiles):
     num_h_donors = Descriptors.NumHDonors(mol)
     num_h_acceptors = Descriptors.NumHAcceptors(mol)
 
-    fp = AllChem.GetMorganFingerprintAsBitVect(mol, 2, nBits=1024)
+    fp = AllChem.GetMorganFingerprintAsBitVect(mol, 2, nBits=204)
     fp_arr = np.zeros((1,))
     AllChem.DataStructs.ConvertToNumpyArray(fp, fp_arr)
 
@@ -115,6 +115,8 @@ compounds = {
     "MPH":'COC(=O)C(c1ccccc1)C1CCCCN1',
     "MDMA":'CC(NC)CC1=CC=C(OCO2)C2=C1',
     "AMP":'C[C@@H](Cc1ccccc1)N',
+    "pemoline":'C1=CC=C(C=C1)C2C(=O)N=C(O2)N',
+    "dopamine":'NCCc1ccc(O)c(O)c1',
 }
 
 logP_values = []

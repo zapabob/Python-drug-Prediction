@@ -1,14 +1,4 @@
-from chembl_webresource_client.new_client import new_client
-from rdkit import Chem
-from rdkit.Chem import Descriptors, AllChem, MolFromSmiles, MolToSmiles
-import numpy as np
-from sklearn.model_selection import train_test_split
-from keras.models import Sequential, load_model
-from keras.layers import Dense, Dropout
-import tkinter as tk
-import pandas as pd
-import matplotlib as plt
-
+from math import log10
 from chembl_webresource_client.new_client import new_client
 from rdkit import Chem
 from rdkit.Chem import Descriptors
@@ -16,24 +6,25 @@ from rdkit.Chem import AllChem
 import numpy as np
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
-from keras.layers import Dense, Dropout
+from keras.layers import Dense
 import tkinter as tk
 from rdkit.Chem import MolFromSmiles, MolToSmiles
 import pandas as pd
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import r2_score
-import matplotlib.pyplot as plt
 
 # ChEMBLデータベースからデータを取得
 target = new_client.target
 target_query = target.search('CHEMBL238')
 targets = pd.DataFrame.from_dict(target_query)
+targets
 
 selected_target = targets.target_chembl_id
+selected_target
 activities = new_client.activity
 res = activities.filter(target_chembl_id='CHEMBL238').filter(standard_type='IC50')
+res
 df = pd.DataFrame.from_dict(res)
-
+df
+# 分子記述子を計算
 def compute_descriptors(smiles):
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
@@ -52,6 +43,7 @@ def compute_descriptors(smiles):
 
     return descriptors
 
+# データの準備
 data = []
 labels = []
 for act in res:
@@ -64,8 +56,13 @@ for act in res:
 data = np.array(data)
 labels = np.array(labels)
 
+# データの分割
 train_data, test_data, train_labels, test_labels = train_test_split(data, labels, test_size=0.2, random_state=64)
 
+# モデルの構築
+from keras.layers import Dropout
+
+# モデルの構築
 model = Sequential([
     Dense(1024, activation='relu', input_shape=(train_data.shape[1],)),
     Dropout(0.5),
@@ -74,20 +71,37 @@ model = Sequential([
     Dense(1)
 ])
 
+
+# モデルのコンパイル
 model.compile(optimizer='adam', loss='mean_squared_error')
+
+# モデルの訓練
 model.fit(train_data, train_labels, epochs=25, batch_size=64, validation_split=0.2)
 
+# モデルの評価
 test_loss = model.evaluate(test_data, test_labels)
+print(f"Test loss: {test_loss}")
+# モデルの予測
+test_predictions = model.predict(test_data)
 
+
+# モデルの予測を行う関数
 def predict_ic50(iupac_name):
     smiles = MolToSmiles(MolFromSmiles(iupac_name))
+    # SMILESを分子記述子に変換
     descriptors = compute_descriptors(smiles)
+    # モデルによる予測
     predicted_ic50 = model.predict(np.array([descriptors]))
-
-    if predicted_ic50 > np.log10(1.0e-3):
-        return "N/A"
+    # IC50が1000を超える場合はN/Aを返す
+    if predicted_ic50 < np.log10(1.0*1e-9):
+        return "N/A" # IC50 >1000
     else:
-        return -np.log10(predicted_ic50)
+        return abs(log10(predicted_ic50))
+
+from rdkit import Chem
+from rdkit.Chem import Descriptors
+import matplotlib.pyplot as plt
+
 compounds = {
     "Cocaine": 'CN1[C@H]2CC[C@@H]1[C@H]([C@H](C2)OC(=O)C3=CC=CC=C3)C(=O)OC',
     "Methamphetamine": 'CNC(C)Cc1ccccc1',
@@ -105,81 +119,83 @@ compounds = {
     "dopamine":'NCCc1ccc(O)c(O)c1',
 }
 
-
-mol_weights = []
+logP_values = []
 predicted_pic50_values = []
-mol_weights = []
-predicted_pic50_values = []
-
-for name, smiles in compounds.items():
-    try:
-        mol = Chem.MolFromSmiles(smiles)
-        if mol:  # Ensure the molecule is not None
-            mol_weight = Descriptors.MolWt(mol)
-            pic50 = predict_ic50(smiles)
-            
-            # Ensure pic50 is not "N/A"
-            if pic50 != "N/A":
-                mol_weights.append(mol_weight)
-                predicted_pic50_values.append(pic50)
-                print(f"{name}: Molecular Weight = {mol_weight}, Predicted pIC50 = {pic50}")
-            else:
-                print(f"Warning: {name} resulted in 'N/A' pIC50 value.")
-        else:
-            print(f"Error: Could not parse SMILES for {name}")
-    except Exception as e:
-        print(f"Error processing {name}: {e}")
-
-# If both lists have data, convert them to numpy arrays
-if mol_weights and predicted_pic50_values:
-    mol_weights_np = np.array(mol_weights).reshape(-1, 1)
-    predicted_pic50_values_np = np.array(predicted_pic50_values).reshape(-1, 1)
-else:
-    print("Error: One of the lists is empty.")
 
 for name, smiles in compounds.items():
     mol = Chem.MolFromSmiles(smiles)
-    mol_weight = Descriptors.MolWt(mol)
-    predicted_pic50 = predict_ic50(smiles)
+    logP = Descriptors.MolLogP(mol)
+    predicted_pic50 = (predict_ic50(smiles))
     
-    mol_weights.append(mol_weight)
+    logP_values.append(logP)
     predicted_pic50_values.append(predicted_pic50)
+    
+    print(f"LogP and predicted pIC50 for {name}: {logP}, {predicted_pic50}")
 
-mol_weights_np = np.array(mol_weights).reshape(-1, 1)
+# Plotting
+plt.figure(figsize=(10, 6))
+plt.scatter(logP_values, predicted_pic50_values)
+for i, txt in enumerate(compounds.keys()):
+    plt.annotate(txt, (logP_values[i], predicted_pic50_values[i]))
+plt.xlabel('LogP')
+plt.ylabel('Predicted pIC50')
+plt.title('Scatter plot of predicted pIC50 against LogP')
+plt.show()
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
+import numpy as np
+
+# Convert the lists to numpy arrays and reshape them
+logP_values_np = np.array(logP_values).reshape(-1, 1)
 predicted_pic50_values_np = np.array(predicted_pic50_values).reshape(-1, 1)
 
+# Fit the linear regression model
 model = LinearRegression()
-model.fit(mol_weights_np, predicted_pic50_values_np)
-predicted_pic50_values_pred = model.predict(mol_weights_np)
+model.fit(logP_values_np, predicted_pic50_values_np)
+
+# Predict the pIC50 values
+predicted_pic50_values_pred = model.predict(logP_values_np)
+
+# Compute the R^2 score
 r2 = r2_score(predicted_pic50_values_np, predicted_pic50_values_pred)
 
+# Plotting
 plt.figure(figsize=(10, 6))
-plt.scatter(mol_weights, predicted_pic50_values, label="Data points")
-plt.plot(mol_weights, predicted_pic50_values_pred, color='red', label="Regression line")
+plt.scatter(logP_values, predicted_pic50_values)
+plt.plot(logP_values, predicted_pic50_values_pred, color='red')  # Add the regression line
 for i, txt in enumerate(compounds.keys()):
-    plt.annotate(txt, (mol_weights[i], predicted_pic50_values[i]))
-plt.xlabel('Molecular Weight')
+    plt.annotate(txt, (logP_values[i], predicted_pic50_values[i]))
+plt.xlabel('LogP')
 plt.ylabel('Predicted pIC50')
-plt.title(f'Scatter plot of predicted pIC50 against Molecular Weight (R^2 = {r2:.2f})')
-plt.legend()
+plt.title(f'Scatter plot of predicted pIC50 against LogP with regression line (R^2 = {r2:.2f})')
 plt.show()
 
-print(f"Equation of the line: pIC50 = {model.intercept_[0]:.2f} + {model.coef_[0][0]:.2f} * Molecular Weight")
+# Print the equation of the line
+print(f"Equation of the line: pIC50 = {model.intercept_[0]:.2f} + {model.coef_[0][0]:.2f} * LogP")
 
-# GUI部分
+
+# GUIの作成
 root = tk.Tk()
 root.title("IC50 Predictor")
+
 
 entry = tk.Entry(root)
 entry.pack()
 
+
 def reset():
+    # clear any stateful parts of the application
     entry.delete(0, 'end')
-    np.result_type_label.config(text="")
+    result_label.config(text="")
+    # clear the input field
     iupac_entry.delete(0, 'end')
+    # you might also need to reset your model or any other stateful parts of your application here
+
 
 reset_button = tk.Button(root, text="Reset", command=reset)
 reset_button.pack()
+
+
 
 def copy():
     root.clipboard_clear()
@@ -194,4 +210,26 @@ copy_button.pack()
 paste_button = tk.Button(root, text="Paste", command=paste)
 paste_button.pack()
 
-iupac_entry = tk.Entry
+
+# 入力フィールド
+iupac_entry = tk.Entry(root)
+iupac_entry.pack()
+
+# 結果表示ラベル
+result_label = tk.Label(root)
+result_label.pack()
+
+# ボタンが押されたときの処理
+def on_button_press():
+    iupac_name = iupac_entry.get()
+    try:
+        predicted_ic50 = -predict_ic50(iupac_name)
+        result_label.config(text=f"Predicted IC50: {predicted_ic50}")
+    except Exception as e:
+        result_label.config(text=f"Error: {str(e)}")
+
+# ボタン
+predict_button = tk.Button(root, text="Predict pIC50", command=on_button_press)
+predict_button.pack()
+
+root.mainloop()
